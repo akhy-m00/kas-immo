@@ -4,6 +4,7 @@ import { Building2, ClipboardList, Inbox, Sparkles } from "lucide-react";
 import { AdminPageHeader, adminMetadata } from "@/components/admin/admin-page";
 import { Button } from "@/components/ui/button";
 import { getAdminStats } from "@/lib/properties-admin";
+import { ChangePasswordForm } from "./change-password-form";
 import { PROPERTY_STATUS_LABELS } from "@/lib/properties";
 import type { PropertyStatus } from "@/lib/supabase/database.types";
 
@@ -102,6 +103,23 @@ export default async function AdminPage() {
             description="Visites et devis : bientôt disponible."
           />
         </ul>
+      </section>
+
+      <section className="mx-auto w-full max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
+        <div className="max-w-md">
+          <h2 className="text-lg font-semibold text-foreground">
+            Sécurité du compte
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Modifiez votre mot de passe de connexion. La session reste ouverte
+            après le changement ; le nouveau mot de passe sera demandé à la
+            prochaine connexion.
+          </p>
+
+          <div className="mt-5 rounded-2xl border border-border bg-card p-5">
+            <ChangePasswordForm />
+          </div>
+        </div>
       </section>
     </div>
   );
