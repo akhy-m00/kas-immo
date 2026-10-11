@@ -20,9 +20,17 @@
  * lieu qu'avec `--apply`. Si un compte existe déjà pour ce numéro, le script
  * prévient et ne modifie rien.
  *
+ * Modes d'exécution :
+ *   - défaut (simulation) : ne fait que des lectures et décrit le plan ;
+ *   - `--apply` : crée le compte et lui attribue immédiatement le rôle admin ;
+ *   - `--apply --sans-promotion` : crée le compte avec un profil `client` sans
+ *     toucher au rôle admin. Réservé au transfert d'administration : le rôle
+ *     est ensuite basculé par une transaction SQL dédiée.
+ *
  * Usage :
- *   ADMIN_INITIAL_PASSWORD='…' node scripts/create-admin.mjs           simulation
- *   ADMIN_INITIAL_PASSWORD='…' node scripts/create-admin.mjs --apply   création
+ *   ADMIN_INITIAL_PASSWORD='…' node scripts/create-admin.mjs                          simulation
+ *   ADMIN_INITIAL_PASSWORD='…' node scripts/create-admin.mjs --apply                  création + rôle admin
+ *   ADMIN_INITIAL_PASSWORD='…' node scripts/create-admin.mjs --apply --sans-promotion  création, profil client
  */
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -33,7 +41,28 @@ import {
   normaliserTelephoneSenegalais,
 } from "../lib/phone.ts";
 
-const APPLIQUER = process.argv.includes("--apply");
+// Options strictes : toute option inconnue est refusée, une faute de frappe ne
+// doit jamais être interprétée comme le comportement attendu.
+const OPTIONS_CONNUES = new Set(["--apply", "--sans-promotion"]);
+const OPTIONS = process.argv.slice(2).filter((arg) => arg.startsWith("-"));
+for (const option of OPTIONS) {
+  if (!OPTIONS_CONNUES.has(option)) {
+    console.error(`Option inconnue : ${option}`);
+    process.exit(1);
+  }
+}
+const APPLIQUER = OPTIONS.includes("--apply");
+const SANS_PROMOTION = OPTIONS.includes("--sans-promotion");
+
+// `--sans-promotion` ne décrit que la création effective : sans `--apply`
+// rien n'est écrit, et l'option deviendrait une promesse illusoire.
+if (SANS_PROMOTION && !APPLIQUER) {
+  console.error(
+    "L'option --sans-promotion doit être combinée à --apply (elle décrit la création du compte).",
+  );
+  process.exit(1);
+}
+
 const RACINE = process.cwd();
 
 const TELEPHONE_SAISI = process.env.ADMIN_PHONE ?? "773407070";
@@ -100,6 +129,53 @@ async function trouverCompteExistant() {
   );
 }
 
+/**
+ * Annule la création du compte Auth si une étape suivante échoue : mieux vaut
+ * ne rien laisser qu'un compte en attente de son profil.
+ */
+async function supprimerCompteCree(id) {
+  const { error } = await db.auth.admin.deleteUser(id);
+  if (error) {
+    console.error(
+      `  ⚠ erreur de nettoyage : le compte ${id} n'a pas pu être supprimé (${error.message})`,
+    );
+    return;
+  }
+  console.log("  → compte créé supprimé (rollback)");
+}
+
+/**
+ * Garantit l'existence du profil en `client` pour un compte qui vient d'être
+ * créé. Le déclencheur `handle_new_user` le crée normalement ; s'il manque, on
+ * le crée ici. En cas d'échec, le compte est annulé pour ne rien laisser à
+ * moitié créé.
+ */
+async function creerProfilClient(id) {
+  const { data: profilExistant } = await db
+    .from("profiles")
+    .select("id")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (profilExistant) {
+    return;
+  }
+
+  const { error: erreurInsertion } = await db.from("profiles").insert({
+    id,
+    full_name: NOM_AFFICHE,
+    phone: telephone,
+    role: "client",
+  });
+  if (erreurInsertion) {
+    console.error(
+      `Compte créé, mais profil client impossible à créer : ${erreurInsertion.message}`,
+    );
+    await supprimerCompteCree(id);
+    process.exit(1);
+  }
+}
+
 async function principal() {
   const existant = await trouverCompteExistant();
 
@@ -127,11 +203,11 @@ async function principal() {
     return;
   }
 
-  console.log("Aucun compte existant : création prévue du compte administrateur.");
+  console.log("Aucun compte existant : création prévue du compte.");
   console.log(`  téléphone            : ${TELEPHONE_SAISI}`);
   console.log(`  identifiant technique: ${email}`);
   console.log(`  nom affiché          : ${NOM_AFFICHE}`);
-  console.log(`  rôle visé            : admin`);
+  console.log(`  rôle visé            : ${SANS_PROMOTION ? "client (promotion différée)" : "admin"}`);
   console.log("  mot de passe         : fourni à l'exécution (jamais affiché)");
 
   if (!APPLIQUER) {
@@ -157,9 +233,23 @@ async function principal() {
 
   const id = cree.user.id;
 
-  // Le déclencheur `handle_new_user` crée le profil en `client`. S'il est
-  // présent (cas normal) on le promeut ; s'il manque, on le crée en `admin`
-  // (défensif). Le dédoublonnage de la migration 0005 protège l'unicité.
+  if (SANS_PROMOTION) {
+    await creerProfilClient(id);
+
+    console.log();
+    console.log("Compte créé, profil 'client' (promotion différée au transfert) :");
+    console.log(`  id      : ${id}`);
+    console.log(`  tél.    : ${TELEPHONE_SAISI}`);
+    console.log(`  identifiant technique : ${email}`);
+    console.log("  rôle    : client");
+    console.log("Étape suivante (hors script) : basculer le rôle admin par une transaction SQL dédiée.");
+    return;
+  }
+
+  // Mode par défaut : le compte devient immédiatement l'administrateur. Le
+  // déclencheur `handle_new_user` a créé le profil en `client` : on le promeut
+  // (ou on le crée en `admin` s'il manque, défensif). La migration 0005 fait
+  // échouer toute promotion qui voudrait créer un second admin.
   const { data: profilExistant } = await db
     .from("profiles")
     .select("id")
@@ -175,6 +265,7 @@ async function principal() {
       console.error(
         `Compte créé, mais promotion en admin impossible : ${erreurPromotion.message}`,
       );
+      await supprimerCompteCree(id);
       process.exit(1);
     }
   } else {
@@ -188,6 +279,7 @@ async function principal() {
       console.error(
         `Compte créé, mais profil admin impossible à créer : ${erreurInsertion.message}`,
       );
+      await supprimerCompteCree(id);
       process.exit(1);
     }
   }
