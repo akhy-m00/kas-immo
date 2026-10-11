@@ -215,6 +215,21 @@ export const backgrounds = {
   },
 } as const satisfies Record<string, BackgroundConfig>;
 
+/**
+ * Photo d'équipe KAS Cleaning, fournie par l'agence (portrait 960×1280).
+ *
+ * Affichée en portrait sur ordinateur (cadre `aspect-[3/4]`, le rapport exact
+ * du cliché, donc sans recadrage) ; sur mobile la fenêtre d'affichage est
+ * bornée en hauteur et la photo est alors légèrement recadrée vers le haut
+ * pour garder les visages et les t-shirts. Le fichier n'est jamais modifié.
+ */
+export const cleaningTeam = {
+  src: "/images/equipe-kas-cleaning.webp",
+  width: 960,
+  height: 1280,
+  alt: "L'équipe KAS Cleaning au travail dans un intérieur",
+} as const;
+
 /** Toutes les variantes de logo connues, indexées par chemin. */
 export const logos = [immobilierLogo, cleaningLogo] as const;
 

@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Masque l'indicateur visuel du mode développement (le badge « N » en bas à
+  // gauche). `false` retire l'indicateur : Next.js continue de signaler les
+  // erreurs de compilation et d'exécution, et cette option n'a aucun effet en
+  // production (l'indicateur n'y est jamais rendu).
+  devIndicators: false,
   // Le serveur de développement n'accepte par défaut que les requêtes venant de
   // `localhost`. Depuis un téléphone ou un autre poste du réseau local, le
   // navigateur envoie `Origin: http://192.168.x.x:3000` : le handshake du

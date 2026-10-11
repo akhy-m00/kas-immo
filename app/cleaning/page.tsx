@@ -1,12 +1,20 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Phone, Sparkles } from "lucide-react";
 
 import { BackgroundSection } from "@/components/BackgroundSection";
 import { SectionBadge } from "@/components/SectionBadge";
 import { CleaningRequestForm } from "@/components/cleaning/cleaning-request-form";
+import { Reveal } from "@/components/motion/Reveal";
 import { Button } from "@/components/ui/button";
-import { backgrounds, cleaningContact, cleaningLogo } from "@/lib/site";
+import { zoomFade } from "@/lib/animations";
+import {
+  backgrounds,
+  cleaningContact,
+  cleaningLogo,
+  cleaningTeam,
+} from "@/lib/site";
 
 const photo = backgrounds.cleaning;
 
@@ -68,6 +76,47 @@ export default function CleaningPage() {
             le type de nettoyage et le créneau qui vous convient&nbsp;: nous vous
             rappelons pour confirmer.
           </p>
+        </div>
+
+        {/* Présentation de l'équipe — un seul conteneur cartonné réunit le texte
+            et la photo : plus de colonne de texte perdue à côté d'un portrait
+            haut sur ordinateur. Le texte est centré verticalement face au
+            cliché ; sur mobile l'ensemble s'empile et la photo est bornée en
+            hauteur (`h-64`) pour alléger la section avant le formulaire.
+
+            Animations : le texte et la photo entrent au défilement via `Reveal`
+            (fondu + léger glissement / zoom), et le zoom au survol est purement
+            CSS (`group-hover`), donc sans script supplémentaire et sans effet
+            sur les écrans tactiles. Le fichier photo n'est jamais modifié. */}
+        <div className="mt-10 overflow-hidden rounded-2xl border border-border bg-card shadow-soft sm:mt-12 md:grid md:grid-cols-[1.45fr_1fr]">
+          <Reveal className="flex flex-col justify-center gap-3 p-6 sm:p-8">
+            <p className="eyebrow">Notre équipe</p>
+            <h2 className="text-xl sm:text-2xl">
+              Une équipe qui ne laisse{" "}
+              <span className="text-brand-text">rien au hasard</span>
+            </h2>
+            <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Des professionnels formés, ponctuels et discrets, qui interviennent
+              avec leur propre matériel et leurs produits — du premier appel à la
+              dernière vérification.
+            </p>
+          </Reveal>
+
+          {/* `overflow-hidden` borne le zoom au cadre de la photo : sans lui,
+              l'agrandissement déborderait sur la colonne de texte. */}
+          <Reveal
+            variant={zoomFade}
+            delay={0.08}
+            className="group relative h-64 w-full overflow-hidden md:aspect-[3/4] md:h-auto"
+          >
+            <Image
+              src={cleaningTeam.src}
+              alt={cleaningTeam.alt}
+              fill
+              sizes="(max-width: 768px) 100vw, 320px"
+              className="object-cover object-[center_20%] transition-transform duration-700 ease-out group-hover:scale-[1.03] md:object-center motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+            />
+          </Reveal>
         </div>
 
         {/* Le formulaire est le contenu de la page. Aucune étape intermédiaire :

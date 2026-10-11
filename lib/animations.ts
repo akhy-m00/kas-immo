@@ -68,6 +68,20 @@ export const scaleIn: Variants = {
 };
 
 /**
+ * Apparition d'une photo : fondu accompagné d'un très léger zoom progressif.
+ * Le zoom part de 0.96 — au-delà, l'œil perçoit un « pop » plutôt qu'une mise
+ * au point. La durée est celle des décors amples pour un effet posé.
+ */
+export const zoomFade: Variants = {
+  hidden: { opacity: 0, scale: 0.96 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: DURATION.slow, ease: EASE_PRO },
+  },
+};
+
+/**
  * Conteneur qui enchaîne ses enfants.
  * `staggerChildren` est modulé par `staggerChildren: 0.08` et non une valeur
  * codée en dur ici, pour que chaque appel reste lisible.
