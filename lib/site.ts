@@ -1,9 +1,23 @@
+function resolveSiteUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (envUrl) {
+    return envUrl.replace(/\/+$/, "");
+  }
+
+  const vercelUrl = process.env.VERCEL_URL?.trim();
+  if (vercelUrl) {
+    return `https://${vercelUrl.replace(/\/+$/, "")}`;
+  }
+
+  return "http://localhost:3000";
+}
+
 export const siteConfig = {
   name: "Keur Anta Services",
   shortName: "KAS",
   legalName: "Keur Anta Services",
   city: "Dakar, Sénégal",
-  url: "https://keurantaservices.sn",
+  url: resolveSiteUrl(),
   description:
     "Keur Anta Services (KAS) intervient à Dakar sur deux pôles : l’immobilier (location, vente, achat, gestion locative) et le nettoyage professionnel d’appartements, studios, maisons et bureaux.",
 } as const;

@@ -69,6 +69,9 @@ const nextConfig: NextConfig = {
       // contrôle d'accès.
       bodySizeLimit: "64mb",
     },
+    // Aligné sur bodySizeLimit pour que le proxy interne de Next.js ne tronque
+    // pas le flux de téléchargement des photos multipart (par défaut 10 Mo).
+    proxyClientMaxBodySize: "64mb",
     // Délai d'encodage de l'optimiseur d'images, relevé de 7 s à 60 s.
     //
     // Le délai de 7 s est trop court ici : il compte le téléchargement de la
