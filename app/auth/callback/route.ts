@@ -1,32 +1,43 @@
 import { NextResponse } from "next/server";
 
+import { cheminInterneSur } from "@/lib/safe-redirect";
+import { siteConfig } from "@/lib/site";
 import type { UserRole } from "@/lib/supabase/database.types";
 import { homeForRole } from "@/lib/supabase/routes";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Retour de la connexion OAuth Google.
+ * Retour de la connexion OAuth Google et du lien de réinitialisation.
  *
  * Tel que documenté pour le flux PKCE, ce retour porte un paramètre
  * `?code=...` : c'est ce code qu'il faut échanger contre une session via
  * `exchangeCodeForSession`. Le fragment OAuth « implicit » (contrairement à
  * PKCE) n'est pas traité ici, et ne doit pas l'être : c'est le code, jamais
  * le jeton, qui transite par l'URL.
+ *
+ * ⚠️ Les redirections visent `siteConfig.url` (NEXT_PUBLIC_SITE_URL), jamais
+ * l'origine de `request.url` : derrière le reverse proxy de production, Next
+ * reçoit la requête sur `http://localhost:3000`, et l'utilisateur serait
+ * renvoyé vers sa propre machine après la connexion.
  */
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
-  const requested = safeNext(searchParams.get("next"));
+  // `suite` est le nom utilisé partout sur le site (gardes de page, lien de
+  // réinitialisation). `next` reste lu pour les liens déjà envoyés.
+  const requested = cheminInterneSur(
+    searchParams.get("suite") ?? searchParams.get("next"),
+  );
 
   if (!code) {
-    return NextResponse.redirect(`${origin}/connexion?erreur=google`);
+    return redirectTo("/connexion?erreur=google");
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    return NextResponse.redirect(`${origin}/connexion?erreur=google`);
+    return redirectTo("/connexion?erreur=google");
   }
 
   // Un admin qui arrive par Google doit atterrir sur son tableau de bord, pas
@@ -45,22 +56,11 @@ export async function GET(request: Request) {
     role = profile?.role ?? "client";
   }
 
-  // La destination dépend du rôle, sauf si un `?next=` explicite a été demandé.
-  const destination = requested ?? homeForRole(role);
-
-  return NextResponse.redirect(`${origin}${destination}`);
+  // La destination dépend du rôle, sauf si un `?suite=` explicite a été demandé.
+  return redirectTo(requested ?? homeForRole(role));
 }
 
-/**
- * N'accepte qu'un chemin interne commençant par `/`.
- *
- * Sans cette vérification, `?next=https://site-pirate.com` transformerait le
- * callback en redirection ouverte, exploitable pour du phishing après une
- * connexion légitime.
- */
-function safeNext(value: string | null): string | null {
-  if (!value) return null;
-  if (!value.startsWith("/")) return null;
-  if (value.startsWith("//")) return null;
-  return value;
+/** Redirection vers un chemin interne, sur l'URL publique du site. */
+function redirectTo(chemin: string) {
+  return NextResponse.redirect(`${siteConfig.url}${chemin}`);
 }

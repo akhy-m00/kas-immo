@@ -1,3 +1,16 @@
+/**
+ * URL publique du site, sans `/` final — source unique pour tous les liens
+ * absolus (metadata, sitemap, robots, redirections d'authentification).
+ *
+ * Vient de `NEXT_PUBLIC_SITE_URL` (`.env.local` en local, `.env` sur le
+ * serveur). Le préfixe `NEXT_PUBLIC_` est obligatoire : c'est lui qui rend la
+ * valeur disponible dans le navigateur. Elle est inlinée AU BUILD, elle doit
+ * donc être présente quand `next build` tourne.
+ *
+ * En production, une valeur absente est une erreur et non un repli sur
+ * localhost : un repli silencieux renvoyait les utilisateurs vers
+ * `http://localhost:3000` après la connexion Google.
+ */
 function resolveSiteUrl(): string {
   const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (envUrl) {
@@ -7,6 +20,12 @@ function resolveSiteUrl(): string {
   const vercelUrl = process.env.VERCEL_URL?.trim();
   if (vercelUrl) {
     return `https://${vercelUrl.replace(/\/+$/, "")}`;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "[site] NEXT_PUBLIC_SITE_URL est manquante. Renseignez-la (ex. https://keurantaservices.sn) avant `next build`.",
+    );
   }
 
   return "http://localhost:3000";

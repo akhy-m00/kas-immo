@@ -14,6 +14,7 @@ import {
   MESSAGE_TELEPHONE_INVALIDE,
   normaliserTelephoneSenegalais,
 } from "@/lib/phone";
+import { cheminInterneSur } from "@/lib/safe-redirect";
 import { immobilierContact } from "@/lib/site";
 import {
   getOwnRole,
@@ -53,14 +54,10 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
  * N'accepte qu'un chemin interne.
  *
  * `?suite=` est posé par les gardes de page, mais la valeur reste sous le
- * contrôle du visiteur : sans ce filtre, `?suite=https://site-pirate.com`
- * ferait de la connexion une redirection ouverte.
+ * contrôle du visiteur — voir `cheminInterneSur()` pour les contournements
+ * (`/\evil.com`…) qu'un simple `startsWith("/")` laisserait passer.
  */
-function safeNext(value: string | null): string | null {
-  if (!value) return null;
-  if (!value.startsWith("/") || value.startsWith("//")) return null;
-  return value;
-}
+const safeNext = cheminInterneSur;
 
 /**
  * Formulaire de connexion par numéro de téléphone et mot de passe.

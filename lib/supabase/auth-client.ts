@@ -8,6 +8,7 @@ import {
   estEmailTechniqueInterne,
   normaliserTelephoneSenegalais,
 } from "@/lib/phone";
+import { siteConfig } from "@/lib/site";
 
 import { createClient } from "./client";
 import type { UserRole } from "./database.types";
@@ -298,7 +299,7 @@ export async function signInWithGoogle(): Promise<AuthResult> {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: `${siteConfig.url}/auth/callback`,
     },
   });
 
@@ -342,7 +343,7 @@ export async function requestPasswordReset(email: string): Promise<AuthResult> {
   const supabase = createClient();
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/auth/callback?suite=/reinitialiser-mot-de-passe`,
+    redirectTo: `${siteConfig.url}/auth/callback?suite=/reinitialiser-mot-de-passe`,
   });
 
   return { error: authErrorMessage(error, "reinitialisation") };

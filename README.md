@@ -97,6 +97,17 @@ Un seul réglage, à appliquer une fois dans **Supabase Dashboard > Authenticati
 | --- | --- | --- |
 | Confirm email | **désactivé** | Tant qu'il est activé, le compte créé n'est pas confirmé, aucune session n'est renvoyée à l'inscription et la connexion échoue avec « Email not confirmed ». Le projet n'envoie aucun e-mail vers `@compte.invalid`. |
 
+Comme les adresses ne sont pas confirmées, la migration `0006_durcissement-auth.sql` refuse en base toute inscription e-mail/mot de passe hors `@compte.invalid` (sinon un tiers pourrait créer un compte au nom d'une vraie adresse Gmail, puis récupérer la connexion Google de son titulaire).
+
+Dans **Authentication > URL Configuration** :
+
+| Réglage | Valeur |
+| --- | --- |
+| Site URL | l'URL de production, identique à `NEXT_PUBLIC_SITE_URL` (jamais `http://localhost:3000`) |
+| Redirect URLs | `https://<domaine>/auth/callback**` et, pour le développement, `http://localhost:3000/auth/callback**` |
+
+Si `redirectTo` n'est pas dans la liste, Supabase renvoie vers la Site URL : c'est ce qui envoie un utilisateur sur localhost en production.
+
 Si ce réglage est réactivé par erreur, aucun e-mail ne part vers le domaine technique (l'envoi échoue côté SMTP, sans conséquence) et les comptes ne peuvent plus se connecter : l'inscription et la connexion affichent alors un message invitant à contacter l'agence.
 
 Sont conservés en parallèle : la connexion **Google**, et un bloc de connexion **e-mail + mot de passe** pour les comptes créés avant le passage au numéro (ils ne sont ni convertis ni supprimés). La réinitialisation de mot de passe reste possible par e-mail pour ces comptes ; un compte créé avec un numéro seul doit passer par l'agence, et `requestPasswordReset()` refuse explicitement toute adresse technique.

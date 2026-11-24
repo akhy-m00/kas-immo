@@ -915,3 +915,65 @@ create policy "cleaning - suppression de photos par un admin"
   for delete
   to authenticated
   using (bucket_id = 'cleaning' and public.is_admin(auth.uid()));
+
+
+-- =============================================================================
+-- 8. DURCISSEMENT DE L AUTHENTIFICATION (voir migrations/0006_durcissement-auth.sql
+--     pour le detail : garde e-mail sur auth.users, is_admin hors anon,
+--     colonnes de profiles modifiables)
+-- =============================================================================
+
+-- ---------------------------------------------------------------------------
+-- 1. Garde sur auth.users
+-- ---------------------------------------------------------------------------
+create or replace function public.garde_email_compte()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  fournisseur text := coalesce(new.raw_app_meta_data ->> 'provider', 'email');
+  domaine_ok  boolean := lower(coalesce(new.email, '')) like '%@compte.invalid';
+begin
+  if fournisseur <> 'email' or domaine_ok then
+    return new;
+  end if;
+
+  if tg_op = 'INSERT' then
+    raise exception 'Inscription refusée : seuls les comptes par numéro de téléphone sont autorisés.'
+      using errcode = '42501';
+  end if;
+
+  if tg_op = 'UPDATE' and new.email is distinct from old.email then
+    raise exception 'Changement d''adresse e-mail refusé.'
+      using errcode = '42501';
+  end if;
+
+  return new;
+end;
+$$;
+
+comment on function public.garde_email_compte() is
+  'Refuse la création d''un compte e-mail/mot de passe, ou le passage d''un tel compte, vers une adresse hors @compte.invalid (confirmation des e-mails désactivée).';
+
+revoke execute on function public.garde_email_compte() from public, anon, authenticated;
+
+drop trigger if exists on_auth_user_email_guard on auth.users;
+create trigger on_auth_user_email_guard
+  before insert or update of email on auth.users
+  for each row
+  execute function public.garde_email_compte();
+
+-- ---------------------------------------------------------------------------
+-- 2. is_admin réservé aux utilisateurs connectés
+-- ---------------------------------------------------------------------------
+revoke execute on function public.is_admin(uuid) from public, anon;
+grant  execute on function public.is_admin(uuid) to authenticated;
+
+-- ---------------------------------------------------------------------------
+-- 3. Colonnes de profiles modifiables par l'API
+-- ---------------------------------------------------------------------------
+revoke update on public.profiles from anon, authenticated;
+grant  update (full_name) on public.profiles to authenticated;
+
