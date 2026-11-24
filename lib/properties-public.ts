@@ -204,9 +204,9 @@ function versBien(row: BienRow): PropertyWithPhotos {
 function erreurLisibles(
   error: { message: string } | null,
   contexte: string,
-): never {
-  throw new Error(
-    `Catalogue indisponible (${contexte}) : ${error?.message ?? "raison inconnue"}`,
+): void {
+  console.warn(
+    `[Catalogue] Indisponible (${contexte}) : ${error?.message ?? "raison inconnue"}`,
   );
 }
 
@@ -261,7 +261,10 @@ export async function listerBiensPublics(
 
   const { data, error } = await query;
 
-  if (error) erreurLisibles(error, "liste des biens");
+  if (error) {
+    erreurLisibles(error, "liste des biens");
+    return [];
+  }
 
   return (data ?? []).map((row) => versBien(row as BienRow));
 }
@@ -280,7 +283,10 @@ export async function trouverBienPublic(
     .eq("id", id)
     .maybeSingle();
 
-  if (error) erreurLisibles(error, "fiche d'un bien");
+  if (error) {
+    erreurLisibles(error, "fiche d'un bien");
+    return null;
+  }
 
   return data ? versBien(data as BienRow) : null;
 }

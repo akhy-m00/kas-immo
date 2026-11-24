@@ -2,8 +2,10 @@ import Link from "next/link";
 import { Building2, ClipboardList, Inbox, Sparkles } from "lucide-react";
 
 import { AdminPageHeader, adminMetadata } from "@/components/admin/admin-page";
+import { AdminAnalyticsChart } from "@/components/admin/admin-analytics-chart";
 import { Button } from "@/components/ui/button";
 import { getAdminStats } from "@/lib/properties-admin";
+import { getAdminAnalytics } from "@/lib/requests-admin";
 import { ChangePasswordForm } from "./change-password-form";
 import { PROPERTY_STATUS_LABELS } from "@/lib/properties";
 import type { PropertyStatus } from "@/lib/supabase/database.types";
@@ -22,7 +24,10 @@ export const metadata = adminMetadata(
  * pas atteindre cette page de toute façon.
  */
 export default async function AdminPage() {
-  const stats = await getAdminStats();
+  const [stats, analytics] = await Promise.all([
+    getAdminStats(),
+    getAdminAnalytics(),
+  ]);
 
   const parStatut = (
     Object.keys(PROPERTY_STATUS_LABELS) as PropertyStatus[]
@@ -79,6 +84,10 @@ export default async function AdminPage() {
           />
         </div>
 
+        <div className="mt-8">
+          <AdminAnalyticsChart data={analytics} />
+        </div>
+
         <h2 className="mt-12 text-lg font-semibold text-foreground">
           Raccourcis
         </h2>
@@ -94,13 +103,13 @@ export default async function AdminPage() {
             href="/admin/cleaning"
             icon={<Sparkles aria-hidden="true" className="size-5" />}
             titre="Gérer le cleaning"
-            description="Prestations de nettoyage : bientôt disponible."
+            description="Créer, modifier et gérer les offres de nettoyage professionnel."
           />
           <Raccourci
             href="/admin/demandes"
             icon={<Inbox aria-hidden="true" className="size-5" />}
             titre="Demandes reçues"
-            description="Visites et devis : bientôt disponible."
+            description="Consulter et traiter les demandes de visites et de devis."
           />
         </ul>
       </section>

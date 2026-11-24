@@ -131,14 +131,22 @@ export const cleaningContact: {
 };
 
 export const socialLinks: {
+  id: "tiktok" | "instagram";
   label: string;
   handle: string;
   href: string;
 }[] = [
   {
+    id: "tiktok",
     label: "TikTok",
     handle: "@kasimmo6",
     href: "https://www.tiktok.com/@kasimmo6",
+  },
+  {
+    id: "instagram",
+    label: "Instagram",
+    handle: "@keur_anta_services",
+    href: "https://www.instagram.com/keur_anta_services?jplx=Ymd4d2x0Z2dtcWY%3D&utm_source=qr",
   },
 ];
 

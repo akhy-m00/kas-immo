@@ -28,9 +28,10 @@ export async function listerServicesPublics(): Promise<CleaningService[]> {
     .order("created_at", { ascending: false });
 
   if (error) {
-    throw new Error(
-      `Services de cleaning injoignables : ${error.message ?? "raison inconnue"}`,
+    console.warn(
+      `[Cleaning] Services injoignables : ${error.message ?? "raison inconnue"}`,
     );
+    return [];
   }
 
   return data ?? [];

@@ -5,7 +5,11 @@ import type {
   RequestStatus,
   RequestType,
 } from "@/lib/supabase/database.types";
-import { STATUS_VALUES, type RequestWithProperty } from "@/lib/requests";
+import {
+  REQUEST_STATUS_LABELS,
+  STATUS_VALUES,
+  type RequestWithProperty,
+} from "@/lib/requests";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -294,4 +298,258 @@ function erreurMessage(
   }
 
   return defaut;
+}
+
+// =============================================================================
+// Statistiques analytiques pour le tableau de bord
+// =============================================================================
+
+export type AnalyticsStatusItem = {
+  status: RequestStatus;
+  label: string;
+  immobilier: number;
+  cleaning: number;
+  total: number;
+};
+
+export type AnalyticsPoint = {
+  key: string;
+  label: string;
+  fullDate: string;
+  immobilier: number;
+  cleaning: number;
+  total: number;
+};
+
+export type AdminAnalyticsData = {
+  totalDemandes: number;
+  demandesImmobilier: number;
+  demandesCleaning: number;
+  demandesEnAttente: number;
+  demandesTraitees: number;
+  tauxTraitement: number;
+  byStatus: AnalyticsStatusItem[];
+  last7Days: AnalyticsPoint[];
+  last30Days: AnalyticsPoint[];
+  last6Months: AnalyticsPoint[];
+  totalBiens: number;
+  totalCleaningServices: number;
+};
+
+const MONTH_NAMES_FR = [
+  "Janv",
+  "Févr",
+  "Mars",
+  "Avr",
+  "Mai",
+  "Juin",
+  "Juil",
+  "Août",
+  "Sept",
+  "Oct",
+  "Nov",
+  "Déc",
+];
+
+const JOURS_SEMAINE_FR = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+const MOIS_COMPLETS_FR = [
+  "janvier",
+  "février",
+  "mars",
+  "avril",
+  "mai",
+  "juin",
+  "juillet",
+  "août",
+  "septembre",
+  "octobre",
+  "novembre",
+  "décembre",
+];
+
+export async function getAdminAnalytics(): Promise<AdminAnalyticsData> {
+  const supabase = await createClient();
+
+  const [requestsRes, propertiesRes, cleaningRes] = await Promise.all([
+    supabase
+      .from("requests")
+      .select("id, type, status, created_at")
+      .order("created_at", { ascending: true }),
+    supabase.from("properties").select("id, status"),
+    supabase
+      .from("cleaning_services")
+      .select("id", { count: "exact", head: true }),
+  ]);
+
+  if (requestsRes.error) {
+    console.warn("Analytics: requests fetch warning", requestsRes.error);
+  }
+
+  const requests = requestsRes.data ?? [];
+  const properties = propertiesRes.data ?? [];
+  const cleaningCount = cleaningRes.count ?? 0;
+
+  let demandesImmobilier = 0;
+  let demandesCleaning = 0;
+  let demandesEnAttente = 0;
+  let demandesTraitees = 0;
+
+  const statusCounts: Record<
+    RequestStatus,
+    { immobilier: number; cleaning: number }
+  > = {
+    nouveau: { immobilier: 0, cleaning: 0 },
+    en_cours: { immobilier: 0, cleaning: 0 },
+    accepte: { immobilier: 0, cleaning: 0 },
+    termine: { immobilier: 0, cleaning: 0 },
+    refuse: { immobilier: 0, cleaning: 0 },
+  };
+
+  const now = new Date();
+
+  const toDayKey = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+      d.getDate(),
+    ).padStart(2, "0")}`;
+
+  const toMonthKey = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+
+  // 1. 7 derniers jours (jours calendaires avec 0 par défaut)
+  const map7Days = new Map<string, AnalyticsPoint>();
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const key = toDayKey(d);
+    const label = `${JOURS_SEMAINE_FR[d.getDay()]} ${d.getDate()}`;
+    const fullDate = `${JOURS_SEMAINE_FR[d.getDay()]} ${d.getDate()} ${
+      MONTH_NAMES_FR[d.getMonth()]
+    } ${d.getFullYear()}`;
+    map7Days.set(key, {
+      key,
+      label,
+      fullDate,
+      immobilier: 0,
+      cleaning: 0,
+      total: 0,
+    });
+  }
+
+  // 2. 30 derniers jours (jours calendaires avec 0 par défaut)
+  const map30Days = new Map<string, AnalyticsPoint>();
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const key = toDayKey(d);
+    const label = `${d.getDate()} ${MONTH_NAMES_FR[d.getMonth()]}`;
+    const fullDate = `${d.getDate()} ${
+      MOIS_COMPLETS_FR[d.getMonth()]
+    } ${d.getFullYear()}`;
+    map30Days.set(key, {
+      key,
+      label,
+      fullDate,
+      immobilier: 0,
+      cleaning: 0,
+      total: 0,
+    });
+  }
+
+  // 3. 6 derniers mois (mois civils avec 0 par défaut)
+  const map6Months = new Map<string, AnalyticsPoint>();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = toMonthKey(d);
+    const label = MONTH_NAMES_FR[d.getMonth()];
+    const fullDate = `${
+      MOIS_COMPLETS_FR[d.getMonth()]
+    } ${d.getFullYear()}`;
+    map6Months.set(key, {
+      key,
+      label,
+      fullDate,
+      immobilier: 0,
+      cleaning: 0,
+      total: 0,
+    });
+  }
+
+  for (const req of requests) {
+    const isImmo = req.type === "visite_bien";
+    const isClean = req.type === "devis_cleaning";
+
+    if (isImmo) demandesImmobilier += 1;
+    if (isClean) demandesCleaning += 1;
+    if (req.status === "nouveau") demandesEnAttente += 1;
+    if (req.status === "accepte" || req.status === "termine") {
+      demandesTraitees += 1;
+    }
+
+    if (statusCounts[req.status]) {
+      if (isImmo) statusCounts[req.status].immobilier += 1;
+      if (isClean) statusCounts[req.status].cleaning += 1;
+    }
+
+    if (req.created_at) {
+      const d = new Date(req.created_at);
+      const dayKey = toDayKey(d);
+      const monthKey = toMonthKey(d);
+
+      const p7 = map7Days.get(dayKey);
+      if (p7) {
+        if (isImmo) p7.immobilier += 1;
+        if (isClean) p7.cleaning += 1;
+        p7.total += 1;
+      }
+
+      const p30 = map30Days.get(dayKey);
+      if (p30) {
+        if (isImmo) p30.immobilier += 1;
+        if (isClean) p30.cleaning += 1;
+        p30.total += 1;
+      }
+
+      const p6m = map6Months.get(monthKey);
+      if (p6m) {
+        if (isImmo) p6m.immobilier += 1;
+        if (isClean) p6m.cleaning += 1;
+        p6m.total += 1;
+      }
+    }
+  }
+
+  const byStatus: AnalyticsStatusItem[] = (
+    ["nouveau", "en_cours", "accepte", "termine", "refuse"] as RequestStatus[]
+  ).map((status) => ({
+    status,
+    label: REQUEST_STATUS_LABELS[status],
+    immobilier: statusCounts[status]?.immobilier ?? 0,
+    cleaning: statusCounts[status]?.cleaning ?? 0,
+    total:
+      (statusCounts[status]?.immobilier ?? 0) +
+      (statusCounts[status]?.cleaning ?? 0),
+  }));
+
+  const last7Days = Array.from(map7Days.values());
+  const last30Days = Array.from(map30Days.values());
+  const last6Months = Array.from(map6Months.values());
+
+  const totalDemandes = requests.length;
+  const tauxTraitement =
+    totalDemandes > 0
+      ? Math.round((demandesTraitees / totalDemandes) * 100)
+      : 0;
+
+  return {
+    totalDemandes,
+    demandesImmobilier,
+    demandesCleaning,
+    demandesEnAttente,
+    demandesTraitees,
+    tauxTraitement,
+    byStatus,
+    last7Days,
+    last30Days,
+    last6Months,
+    totalBiens: properties.length,
+    totalCleaningServices: cleaningCount,
+  };
 }
