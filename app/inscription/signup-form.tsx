@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { motion } from "motion/react";
 
-import { GoogleButton } from "@/components/auth/google-button";
 import { FloatingField } from "@/components/motion/FloatingField";
 import { Button } from "@/components/ui/button";
 import { DURATION, EASE_PRO } from "@/lib/animations";
@@ -198,23 +197,6 @@ export function SignupForm() {
           </motion.p>
         ) : null}
       </form>
-
-      {/* Google reste accessible, mais clairement en second : le parcours
-          téléphone est celui que le site pousse, et il est le seul qui ne
-          dépende d'aucun service tiers payant. */}
-      <div className="mt-8 flex items-center gap-3" aria-hidden="true">
-        <span className="h-px flex-1 bg-border" />
-        <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-          ou
-        </span>
-        <span className="h-px flex-1 bg-border" />
-      </div>
-
-      <p className="mt-4 mb-3 text-center text-xs text-muted-foreground">
-        Méthode secondaire, si vous préférez votre compte Google.
-      </p>
-
-      <GoogleButton />
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
         Déjà inscrit ?{" "}

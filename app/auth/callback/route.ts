@@ -7,7 +7,10 @@ import { homeForRole } from "@/lib/supabase/routes";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Retour de la connexion OAuth Google et du lien de réinitialisation.
+ * Retour du lien de réinitialisation du mot de passe (e-mail).
+ *
+ * La connexion Google a été retirée ; cette route reste indispensable au lien
+ * de réinitialisation, qui revient ici avec un `?code=`.
  *
  * Tel que documenté pour le flux PKCE, ce retour porte un paramètre
  * `?code=...` : c'est ce code qu'il faut échanger contre une session via
@@ -30,18 +33,18 @@ export async function GET(request: Request) {
   );
 
   if (!code) {
-    return redirectTo("/connexion?erreur=google");
+    return redirectTo("/connexion?erreur=lien");
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
-    return redirectTo("/connexion?erreur=google");
+    return redirectTo("/connexion?erreur=lien");
   }
 
-  // Un admin qui arrive par Google doit atterrir sur son tableau de bord, pas
-  // sur l'espace client. Le rôle est relu après l'échange du code, donc la
+  // Sans `?suite=`, un admin doit atterrir sur son tableau de bord, pas sur
+  // l'espace client. Le rôle est relu après l'échange du code, donc la
   // session existe déjà et la RLS de `profiles` autorise la lecture.
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims;

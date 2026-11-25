@@ -59,7 +59,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     fullName: profile?.full_name || fallbackName(email),
     // `profiles.phone` est la source normale : le déclencheur le remplit à
     // l'inscription. `claims.phone` n'est qu'un repli, pour un compte dont la
-    // ligne de profil aurait été créée sans métadonnées. Google ne fournit ni
+    // ligne de profil aurait été créée sans métadonnées. Un ancien compte e-mail ou Google ne fournit ni
     // l'un ni l'autre, d'où le `null` affiché plus bas comme un champ absent.
     phone:
       profile?.phone ??

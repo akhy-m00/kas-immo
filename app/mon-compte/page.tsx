@@ -81,8 +81,8 @@ export default async function MonComptePage({
                   remplacée par une chaîne vide via `estEmailTechniqueInterne()`.
                   Le test ci-dessous porte donc sur l'absence d'e-mail, jamais sur
                   son contenu : afficher cette ligne pour un compte téléphone
-                  montrerait une adresse inexistante. Les comptes Google et les
-                  anciens comptes e-mail continuent de voir la leur, sans aucune
+                  montrerait une adresse inexistante. Les anciens comptes
+                  e-mail (et Google, avant son retrait) continuent de voir la leur, sans aucune
                   modification de leurs données. */}
               {user.email ? (
                 <div className="flex flex-col gap-1">

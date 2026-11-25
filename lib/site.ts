@@ -9,7 +9,7 @@
  *
  * En production, une valeur absente est une erreur et non un repli sur
  * localhost : un repli silencieux renvoyait les utilisateurs vers
- * `http://localhost:3000` après la connexion Google.
+ * `http://localhost:3000` après une connexion.
  */
 function resolveSiteUrl(): string {
   const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();

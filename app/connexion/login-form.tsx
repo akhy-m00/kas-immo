@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { motion } from "motion/react";
 
-import { GoogleButton } from "@/components/auth/google-button";
 import { FloatingField } from "@/components/motion/FloatingField";
 import { Button } from "@/components/ui/button";
 import { DURATION, EASE_PRO } from "@/lib/animations";
@@ -39,8 +38,8 @@ const MESSAGES = {
   telephoneInvalide: MESSAGE_TELEPHONE_INVALIDE,
   motDePasseVide: "Saisissez votre mot de passe.",
   accesRefuse: "Accès réservé à l'administration.",
-  googleEchoue:
-    "La connexion avec Google n'a pas abouti. Réessayez, ou utilisez votre numéro et votre mot de passe.",
+  lienInvalide:
+    "Ce lien n'est plus valide ou a expiré. Demandez un nouvel e-mail de réinitialisation.",
   emailRecuperationInvalide: "Saisissez une adresse e-mail valide.",
   emailConnexionInvalide: "Saisissez une adresse e-mail valide.",
   motDePasseEmailConnexionVide: "Saisissez votre mot de passe.",
@@ -72,14 +71,15 @@ export function LoginForm() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  // Un `?erreur=` peut être posé par le callback OAuth (échec Google) ou par la
-  // garde `/admin` (rôle insuffisant) : le message est repris tel quel.
+  // Un `?erreur=` peut être posé par `/auth/callback` (lien de
+  // réinitialisation invalide ou expiré) ou par la garde `/admin` (rôle
+  // insuffisant) : le message est repris tel quel.
   const [formError, setFormError] = useState<string | null>(() => {
     switch (searchParams.get("erreur")) {
       case "acces-restreint":
         return MESSAGES.accesRefuse;
-      case "google":
-        return MESSAGES.googleEchoue;
+      case "lien":
+        return MESSAGES.lienInvalide;
       default:
         return null;
     }
@@ -434,22 +434,6 @@ export function LoginForm() {
           </Button>
         </form>
       </details>
-
-      {/* Google reste proposé, mais explicitement en second : le téléphone est
-          le parcours principal, et le seul qui n'a pas de coût. */}
-      <div className="mt-6 flex items-center gap-3" aria-hidden="true">
-        <span className="h-px flex-1 bg-border" />
-        <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-          ou
-        </span>
-        <span className="h-px flex-1 bg-border" />
-      </div>
-
-      <p className="mt-4 mb-3 text-center text-xs text-muted-foreground">
-        Méthode secondaire, si vous préférez votre compte Google.
-      </p>
-
-      <GoogleButton />
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
         Pas encore de compte ?{" "}

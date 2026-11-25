@@ -54,7 +54,6 @@ function traduireErreurAuth(
     | "connexion"
     | "connexionEmail"
     | "inscription"
-    | "google"
     | "reinitialisation" = "connexion",
 ): string | null {
   if (!error) return null;
@@ -117,10 +116,6 @@ function traduireErreurAuth(
       message.includes("over_email_send_rate_limit"):
       return "Trop d'e-mails envoyés. Patientez avant de réessayer.";
 
-    case message.includes("provider is not enabled") ||
-      message.includes("unsupported provider"):
-      return "La connexion avec Google n'est pas encore activée sur ce projet.";
-
     // Le Phone Auth de Supabase n'est plus utilisé : il exigerait un
     // fournisseur SMS payant. Son ancien code d'erreur (`otp_disabled`) ne peut
     // donc plus survenir, et aucun message ne promet ici une vérification SMS.
@@ -133,8 +128,6 @@ function traduireErreurAuth(
   switch (context) {
     case "inscription":
       return "L'inscription n'a pas abouti. Vérifiez vos informations et réessayez.";
-    case "google":
-      return "La connexion avec Google a échoué. Réessayez, ou utilisez votre numéro et votre mot de passe.";
     case "reinitialisation":
       return "L'envoi de l'e-mail a échoué. Réessayez dans quelques instants.";
     default:
@@ -155,7 +148,6 @@ export function authErrorMessage(
     | "connexion"
     | "connexionEmail"
     | "inscription"
-    | "google"
     | "reinitialisation" = "connexion",
 ): string | null {
   const message = traduireErreurAuth(error, context);
@@ -284,26 +276,6 @@ export async function signInWithEmailPassword(params: {
   });
 
   return { error: authErrorMessage(error, "connexionEmail") };
-}
-
-/**
- * Lance la connexion OAuth Google.
- *
- * `redirectTo` doit figurer dans la liste « Redirect URLs » du tableau de
- * bord Supabase. Le navigateur quitte le site pour Google puis revient sur
- * `/auth/callback`, qui échange le code contre une session.
- */
-export async function signInWithGoogle(): Promise<AuthResult> {
-  const supabase = createClient();
-
-  const { error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: `${siteConfig.url}/auth/callback`,
-    },
-  });
-
-  return { error: authErrorMessage(error, "google") };
 }
 
 /** Déconnexion. `scope: "local"` évite d'invalider les sessions d'autres appareils. */
