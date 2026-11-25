@@ -8,11 +8,14 @@ import { formaterTelephoneSenegalais } from "@/lib/phone";
 import { immobilierLogo } from "@/lib/site";
 import { requireUser } from "@/lib/supabase/auth";
 import { DemandesList } from "./demandes-list";
+import { metadataPage } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Mon compte",
+export const metadata: Metadata = metadataPage({
+  titre: "Mon compte",
   description: "Votre espace client Keur Anta Services.",
-};
+  chemin: "/mon-compte",
+  indexable: false,
+});
 
 const NOTICES: Record<string, string> = {
   "acces-restreint": "Accès réservé à l'administration.",

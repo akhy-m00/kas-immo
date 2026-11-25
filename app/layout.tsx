@@ -9,6 +9,8 @@ import { BackToTop } from "@/components/motion/BackToTop";
 import { ScrollProgress } from "@/components/motion/ScrollProgress";
 import { WelcomeSplash } from "@/components/motion/WelcomeSplash";
 import { SmoothScroll } from "@/components/SmoothScroll";
+import { JsonLd } from "@/components/seo/json-ld";
+import { TITRE_SITE, jsonLdSite } from "@/lib/seo";
 import { siteConfig } from "@/lib/site";
 
 import "./globals.css";
@@ -26,20 +28,56 @@ const displayFont = Plus_Jakarta_Sans({
   weight: ["600", "700", "800"],
 });
 
+/**
+ * Métadonnées par défaut de tout le site.
+ *
+ * Pas d'URL canonique ici : elle serait héritée par toute page qui n'en
+ * déclare pas, et désignerait l'accueil comme version officielle de chaque
+ * page. Chaque page publique déclare la sienne via `metadataPage()`.
+ *
+ * L'image de partage vient de `app/opengraph-image.tsx` (fichier), héritée par
+ * les pages qui n'ont pas la leur.
+ */
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} — Immobilier & Nettoyage à Dakar`,
+    default: TITRE_SITE,
     template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
+  applicationName: siteConfig.name,
+  authors: [{ name: siteConfig.name, url: siteConfig.url }],
+  creator: siteConfig.name,
+  publisher: siteConfig.name,
+  category: "real estate",
+  formatDetection: { telephone: false, email: false, address: false },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
   openGraph: {
     locale: "fr_SN",
     type: "website",
     siteName: siteConfig.name,
-    title: `${siteConfig.name} — Immobilier & Nettoyage à Dakar`,
+    title: TITRE_SITE,
     description: siteConfig.description,
   },
+  twitter: {
+    card: "summary_large_image",
+    title: TITRE_SITE,
+    description: siteConfig.description,
+  },
+  // Code fourni par Google Search Console (« Balise HTML »), facultatif.
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
 };
 
 export const viewport: Viewport = {
@@ -64,6 +102,7 @@ export default function RootLayout({
       className={`${bodyFont.variable} ${displayFont.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        <JsonLd donnees={jsonLdSite()} />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

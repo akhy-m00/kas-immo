@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { ChevronDown, Phone } from "lucide-react";
 
@@ -53,6 +54,27 @@ export function MobileNav() {
   const [open, setOpen] = useState(false);
   const closeSheet = () => setOpen(false);
 
+  // Filet de sécurité : quelle que soit l'origine de la navigation (lien du
+  // menu, bouton retour, redirection après connexion…), le panneau se ferme
+  // dès que la page change. Les clics ferment déjà le menu immédiatement ;
+  // ceci couvre tous les autres cas.
+  //
+  // Comparaison pendant le rendu plutôt qu'un `useEffect` : c'est le motif
+  // recommandé par React pour réinitialiser un état quand une valeur change
+  // (pas de rendu intermédiaire avec le menu encore ouvert), et la règle
+  // `react-hooks/set-state-in-effect` du projet interdit l'autre forme.
+  //
+  // `usePathname` seul, sans `useSearchParams` : ce dernier obligerait à
+  // entourer tout l'en-tête d'un `<Suspense>` et ferait perdre le prérendu
+  // statique des pages. Les liens du menu ne visent que des chemins, et un
+  // clic sur la page déjà ouverte ferme le panneau via `onNavigate`.
+  const pathname = usePathname();
+  const [dernierChemin, setDernierChemin] = useState(pathname);
+  if (pathname !== dernierChemin) {
+    setDernierChemin(pathname);
+    setOpen(false);
+  }
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -103,7 +125,7 @@ export function MobileNav() {
             {/* Connecté : accès au compte et déconnexion ; sinon : /connexion.
                 `width="block"` pour un rendu plein largeur, cohérent avec les
                 autres éléments de la liste. */}
-            <AuthNavLink width="block" />
+            <AuthNavLink width="block" onNavigate={closeSheet} />
 
             {/* Les numéros et informations secondaires sont regroupés dans une
                 section repliable pour garder le panneau compact. `<details>`

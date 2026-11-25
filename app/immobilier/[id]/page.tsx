@@ -15,6 +15,8 @@ import {
 import { estUuid, trouverBienPublic } from "@/lib/properties-public";
 import { immobilierContact } from "@/lib/site";
 import { ContactActions } from "@/components/ContactActions";
+import { JsonLd } from "@/components/seo/json-ld";
+import { jsonLdBien, jsonLdFilAriane, metadataPage } from "@/lib/seo";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 
 /**
@@ -35,15 +37,40 @@ export async function generateMetadata({
   const bien = await trouverBienPublic(id);
 
   if (!bien) {
-    return { title: "Bien introuvable — KAS Immobilier" };
+    return {
+      title: "Bien introuvable — KAS Immobilier",
+      robots: { index: false, follow: true },
+    };
   }
 
-  return {
-    title: `${bien.title} — KAS Immobilier`,
-    description: `${PROPERTY_TYPE_LABELS[bien.type]} ${TRANSACTION_TYPE_LABELS[
-      bien.transaction_type
-    ].toLowerCase()} à ${bien.location} — ${formatFcfa(bien.price)}.`,
-  };
+  // « Appartement · location à Almadies — 450 000 FCFA. » suivi du début de
+  // la description : Google coupe vers 155 caractères.
+  const resume = `${PROPERTY_TYPE_LABELS[bien.type]} en ${TRANSACTION_TYPE_LABELS[
+    bien.transaction_type
+  ].toLowerCase()} à ${bien.location} — ${formatFcfa(bien.price)}.`;
+  const extrait = bien.description?.replace(/\s+/g, " ").trim() ?? "";
+  const complet = extrait ? `${resume} ${extrait}` : resume;
+  const description =
+    complet.length > 160
+      ? `${complet.slice(0, 157).replace(/\s+\S*$/, "")}…`
+      : complet;
+
+  return metadataPage({
+    titre: `${bien.title} — KAS Immobilier`,
+    description,
+    chemin: `/immobilier/${bien.id}`,
+    image: {
+      chemin: `/immobilier/${bien.id}/opengraph-image`,
+      alt: `${bien.title} — ${bien.location}`,
+    },
+    motsCles: [
+      `${PROPERTY_TYPE_LABELS[bien.type].toLowerCase()} ${bien.location}`,
+      "immobilier Dakar",
+    ],
+    // Un bien loué ou vendu reste consultable par lien, sans être mis en avant
+    // dans les résultats de recherche.
+    indexable: bien.status === "disponible",
+  });
 }
 
 export default async function FicheBienPage({ params }: PageProps) {
@@ -59,6 +86,14 @@ export default async function FicheBienPage({ params }: PageProps) {
 
   return (
     <article className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
+      <JsonLd donnees={jsonLdBien(bien)} />
+      <JsonLd
+        donnees={jsonLdFilAriane([
+          { nom: "Accueil", chemin: "/" },
+          { nom: "Immobilier", chemin: "/immobilier" },
+          { nom: bien.title, chemin: `/immobilier/${bien.id}` },
+        ])}
+      />
       <Button asChild variant="ghost" size="sm" className="-ml-2 gap-2">
         <Link href="/immobilier">
           <ArrowLeft aria-hidden="true" />

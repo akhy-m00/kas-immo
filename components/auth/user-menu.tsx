@@ -28,6 +28,11 @@ type UserMenuProps = {
   /** `button` (header) ou `block` (liste du menu mobile). */
   width?: "button" | "block";
   className?: string;
+  /**
+   * Appelé quand une entrée du menu est choisie (lien ou déconnexion) : le
+   * menu mobile s'en sert pour se refermer avant la navigation.
+   */
+  onNavigate?: () => void;
 };
 
 /**
@@ -43,6 +48,7 @@ export function UserMenu({
   variant = "dropdown",
   width = "button",
   className,
+  onNavigate,
 }: UserMenuProps) {
   const router = useRouter();
   const [user, setUser] = useState<SessionUser | null>(null);
@@ -90,6 +96,7 @@ export function UserMenu({
   }, [open, variant]);
 
   async function handleSignOut() {
+    onNavigate?.();
     setPending(true);
     await signOut();
     // `replace` plutôt que `push` : la page courante ne doit pas rester dans
@@ -119,14 +126,14 @@ export function UserMenu({
     return (
       <div className={cn("flex flex-col gap-3", className)}>
         <Button asChild variant="outline" size="lg" className="h-11 w-full">
-          <Link href="/mon-compte">
+          <Link href="/mon-compte" onClick={onNavigate}>
             <User className="size-4" />
             Mon compte
           </Link>
         </Button>
         {user.role === "admin" ? (
           <Button asChild variant="outline" size="lg" className="h-11 w-full">
-            <Link href="/admin">
+            <Link href="/admin" onClick={onNavigate}>
               <LayoutDashboard className="size-4" />
               Administration
             </Link>
@@ -195,13 +202,19 @@ export function UserMenu({
                 inPanel ? "w-full" : "absolute top-full right-0 w-56",
               )}
             >
-              <MenuLink href="/mon-compte" onSelect={() => setOpen(false)}>
+              <MenuLink href="/mon-compte" onSelect={() => {
+                  setOpen(false);
+                  onNavigate?.();
+                }}>
                 <User className="size-4" />
                 Mon compte
               </MenuLink>
 
               {user.role === "admin" ? (
-                <MenuLink href="/admin" onSelect={() => setOpen(false)}>
+                <MenuLink href="/admin" onSelect={() => {
+                  setOpen(false);
+                  onNavigate?.();
+                }}>
                   <LayoutDashboard className="size-4" />
                   Administration
                 </MenuLink>

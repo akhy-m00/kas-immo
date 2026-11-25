@@ -3,25 +3,27 @@ import type { MetadataRoute } from "next";
 import { siteConfig } from "@/lib/site";
 
 /**
- * `robots.txt` généré.
+ * `robots.txt` généré (`/robots.txt`).
  *
- * L'espace admin et les pages de compte ne doivent pas être indexés : une
- * page de connexion dans les résultats de recherche n'apporte rien et
- * dilue le référencement des pages publiques.
+ * Seules les zones sans aucun contenu public sont bloquées : l'administration
+ * et le retour d'authentification.
+ *
+ * Les pages de compte (`/connexion`, `/inscription`, `/mon-compte`,
+ * `/reinitialiser-mot-de-passe`) ne sont volontairement PAS bloquées ici :
+ * elles portent une balise `noindex`, et un robot ne peut lire cette balise
+ * que s'il a le droit d'ouvrir la page. Les bloquer ferait apparaître leur URL
+ * nue dans Google (« aucune information disponible »), puisqu'elles sont
+ * liées depuis l'en-tête du site.
  */
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: {
-      userAgent: "*",
-      allow: "/",
-      disallow: [
-        "/admin",
-        "/mon-compte",
-        "/connexion",
-        "/inscription",
-        "/reinitialiser-mot-de-passe",
-      ],
-    },
+    rules: [
+      {
+        userAgent: "*",
+        allow: "/",
+        disallow: ["/admin", "/auth/"],
+      },
+    ],
     sitemap: `${siteConfig.url}/sitemap.xml`,
     host: siteConfig.url,
   };

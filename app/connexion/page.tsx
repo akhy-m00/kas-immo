@@ -5,11 +5,14 @@ import { SectionBadge } from "@/components/SectionBadge";
 import { immobilierLogo } from "@/lib/site";
 
 import { LoginForm } from "./login-form";
+import { metadataPage } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Connexion",
+export const metadata: Metadata = metadataPage({
+  titre: "Connexion",
   description: "Espace client Keur Anta Services.",
-};
+  chemin: "/connexion",
+  indexable: false,
+});
 
 export default function ConnexionPage() {
   return (

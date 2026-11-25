@@ -50,7 +50,7 @@ export function FiltresDemandes({ statut, type, recherche, actif }: FiltresProps
             name="statut"
             defaultValue={statut}
             onChange={() => formRef.current?.requestSubmit()}
-            className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-brand-text focus-visible:ring-3 focus-visible:ring-brand-text/20"
+            className="h-10 w-full rounded-lg border border-input bg-background px-3 text-base outline-none focus-visible:border-brand-text focus-visible:ring-3 focus-visible:ring-brand-text/20"
           >
             <option value="">Tous les statuts</option>
             {REQUEST_STATUSES.map((option) => (
@@ -73,7 +73,7 @@ export function FiltresDemandes({ statut, type, recherche, actif }: FiltresProps
             name="type"
             defaultValue={type}
             onChange={() => formRef.current?.requestSubmit()}
-            className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-brand-text focus-visible:ring-3 focus-visible:ring-brand-text/20"
+            className="h-10 w-full rounded-lg border border-input bg-background px-3 text-base outline-none focus-visible:border-brand-text focus-visible:ring-3 focus-visible:ring-brand-text/20"
           >
             <option value="">Tous les types</option>
             {REQUEST_TYPES.map((option) => (
@@ -98,7 +98,7 @@ export function FiltresDemandes({ statut, type, recherche, actif }: FiltresProps
               name="recherche"
               defaultValue={recherche}
               placeholder="Nom, e-mail ou téléphone…"
-              className="h-10 w-full min-w-0 rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-brand-text focus-visible:ring-3 focus-visible:ring-brand-text/20"
+              className="h-10 w-full min-w-0 rounded-lg border border-input bg-background px-3 text-base outline-none focus-visible:border-brand-text focus-visible:ring-3 focus-visible:ring-brand-text/20"
             />
             <button
               type="submit"

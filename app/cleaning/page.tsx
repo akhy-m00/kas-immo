@@ -15,16 +15,30 @@ import {
   cleaningLogo,
   cleaningTeam,
 } from "@/lib/site";
+import { metadataPage } from "@/lib/seo";
 
 const photo = backgrounds.cleaning;
 
 /** Le premier numéro est celui affiché en appel à l'action. */
 const telephone = cleaningContact.phones[0];
 
-export const metadata: Metadata = {
-  title: "KAS Cleaning",
-  description: "Un service de nettoyage efficace.",
-};
+export const metadata: Metadata = metadataPage({
+  titre: "Nettoyage professionnel à Dakar",
+  description:
+    "KAS Cleaning nettoie appartements, studios, maisons, bureaux et immeubles à Dakar, y compris après un déménagement. Décrivez votre besoin et recevez un devis.",
+  chemin: "/cleaning",
+  image: {
+    chemin: "/cleaning/opengraph-image",
+    alt: "KAS Cleaning — nettoyage professionnel à Dakar",
+  },
+  motsCles: [
+    "nettoyage Dakar",
+    "société de nettoyage Dakar",
+    "nettoyage bureaux Dakar",
+    "nettoyage appartement Dakar",
+    "ménage après déménagement Dakar",
+  ],
+});
 
 /**
  * KAS Cleaning ne charge plus aucun catalogue.

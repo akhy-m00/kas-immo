@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 
 import { SectionBadge } from "@/components/SectionBadge";
 import { immobilierLogo, siteConfig } from "@/lib/site";
+import { metadataPage } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "À propos",
+export const metadata: Metadata = metadataPage({
+  titre: "À propos",
   description:
-    "Keur Anta Services (KAS) intervient à Dakar sur deux pôles : l’immobilier et le nettoyage professionnel.",
-};
+    "Keur Anta Services (KAS) intervient à Dakar sur deux pôles : l’immobilier (location, vente, achat, gestion locative) et le nettoyage professionnel.",
+  chemin: "/a-propos",
+});
 
 export default function AProposPage() {
   return (

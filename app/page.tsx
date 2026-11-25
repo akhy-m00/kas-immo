@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
@@ -18,8 +19,23 @@ import {
   immobilierLogo,
   siteConfig,
 } from "@/lib/site";
+import { TITRE_SITE, metadataPage } from "@/lib/seo";
 
 const hero = backgrounds.hero;
+
+export const metadata: Metadata = metadataPage({
+  titre: TITRE_SITE,
+  titreAbsolu: true,
+  description: siteConfig.description,
+  chemin: "/",
+  motsCles: [
+    "immobilier Dakar",
+    "agence immobilière Dakar",
+    "location Dakar",
+    "nettoyage Dakar",
+    "société de nettoyage Dakar",
+  ],
+});
 
 /**
  * La page reste prérendue comme avant : la section « Biens à la une » lit le

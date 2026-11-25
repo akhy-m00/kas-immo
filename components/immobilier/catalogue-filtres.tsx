@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { Loader2, SlidersHorizontal, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { FloatingField } from "@/components/motion/FloatingField";
 import { OPTIONS_TYPE, OPTIONS_TRANSACTION } from "@/lib/properties-public";
 import type { CatalogueFiltres } from "@/lib/properties-public";
@@ -16,8 +17,13 @@ import type { CatalogueFiltres } from "@/lib/properties-public";
  * partageable, rechargeable et indexable, et la page reste rendue côté serveur.
  *
  * Le formulaire n'est pas soumis par l'appui sur « Entrée » : les filtres
- * s'appliquent dès qu'ils changent, avec un court délai sur la seule recherche
- * textuelle, pour ne pas relancer une requête à chaque lettre frappée.
+ * s'appliquent dès qu'ils changent. Les champs saisis au clavier (recherche,
+ * prix) attendent une courte pause avant de s'appliquer, pour ne pas relancer
+ * une requête à chaque lettre ou chiffre tapé.
+ *
+ * ⚠️ Toutes les navigations passent `{ scroll: false }` : sans cette option,
+ * l'App Router remonte en haut de la page à chaque changement d'URL, et le
+ * champ en cours de saisie sortait de l'écran sur mobile.
  */
 
 type CatalogueFiltresProps = {
@@ -28,7 +34,11 @@ type CatalogueFiltresProps = {
   actifs: boolean;
 };
 
-const DELAI_RECHERCHE_MS = 350;
+/**
+ * Pause de saisie avant d'appliquer un champ texte ou prix. Assez longue pour
+ * qu'un prix tapé chiffre par chiffre ne déclenche qu'une seule requête.
+ */
+const DELAI_SAISIE_MS = 450;
 
 export function CatalogueFiltres({
   filtres,
@@ -39,6 +49,8 @@ export function CatalogueFiltres({
   const searchParams = useSearchParams();
   const [enAttente, demarrer] = useTransition();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Saisies au clavier pas encore appliquées, par paramètre d'URL.
+  const saisiesEnAttenteRef = useRef<Record<string, string | null>>({});
 
   const [recherche, setRecherche] = useState(filtres.recherche ?? "");
   const [ouvert, setOuvert] = useState(false);
@@ -75,18 +87,31 @@ export function CatalogueFiltres({
     return chaine ? `/immobilier?${chaine}` : "/immobilier";
   }
 
+  /**
+   * Applique des filtres, en y joignant les saisies encore en attente : un
+   * choix dans une liste juste après avoir tapé un prix ne doit pas perdre ce
+   * prix.
+   */
   function appliquer(modifications: Record<string, string | null>) {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
+    const toutes = { ...saisiesEnAttenteRef.current, ...modifications };
+    saisiesEnAttenteRef.current = {};
+
     demarrer(() => {
-      router.push(construireURL(modifications));
+      router.push(construireURL(toutes), { scroll: false });
     });
   }
 
+  /** Champ saisi au clavier : appliqué après une pause de frappe. */
   function changerTexte(cle: string, valeur: string) {
-    if (timerRef.current) clearTimeout(timerRef.current);
+    saisiesEnAttenteRef.current[cle] = valeur.trim() || null;
 
-    timerRef.current = setTimeout(() => {
-      appliquer({ [cle]: valeur.trim() || null });
-    }, DELAI_RECHERCHE_MS);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => appliquer({}), DELAI_SAISIE_MS);
   }
 
   function reinitialiser() {
@@ -150,7 +175,7 @@ export function CatalogueFiltres({
               onChange={(event) =>
                 appliquer({ transaction: event.target.value || null })
               }
-              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
+              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-base"
             >
               <option value="">Toutes</option>
               {OPTIONS_TRANSACTION.map((option) => (
@@ -169,7 +194,7 @@ export function CatalogueFiltres({
               onChange={(event) =>
                 appliquer({ type: event.target.value || null })
               }
-              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
+              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-base"
             >
               <option value="">Tous</option>
               {OPTIONS_TYPE.map((option) => (
@@ -191,10 +216,8 @@ export function CatalogueFiltres({
               min={0}
               defaultValue={filtres.prixMin ?? ""}
               placeholder="0"
-              onChange={(event) =>
-                appliquer({ prixMin: event.target.value || null })
-              }
-              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
+              onChange={(event) => changerTexte("prixMin", event.target.value)}
+              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-base"
             />
           </label>
 
@@ -209,10 +232,8 @@ export function CatalogueFiltres({
               min={0}
               defaultValue={filtres.prixMax ?? ""}
               placeholder="—"
-              onChange={(event) =>
-                appliquer({ prixMax: event.target.value || null })
-              }
-              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-sm"
+              onChange={(event) => changerTexte("prixMax", event.target.value)}
+              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-base"
             />
           </label>
 
@@ -236,18 +257,26 @@ export function CatalogueFiltres({
       </form>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3 text-sm text-muted-foreground">
-        <p aria-live="polite">
-          {enAttente ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader2 aria-hidden="true" className="size-4 animate-spin" />
-              Recherche en cours…
-            </span>
-          ) : (
-            <>
-              <strong className="font-semibold text-foreground">{total}</strong>{" "}
-              {total > 1 ? "biens trouvés" : "bien trouvé"}
-            </>
-          )}
+        {/* Les deux libellés occupent la même cellule de grille et seul
+            l'un est visible : la ligne garde la largeur et la hauteur du plus
+            grand des deux, donc rien ne bouge quand la recherche démarre ou
+            se termine. */}
+        <p aria-live="polite" className="grid min-h-8 items-center">
+          <span
+            className={cn(
+              "col-start-1 row-start-1 inline-flex items-center gap-2",
+              !enAttente && "invisible",
+            )}
+          >
+            <Loader2 aria-hidden="true" className="size-4 animate-spin" />
+            Recherche en cours…
+          </span>
+          <span
+            className={cn("col-start-1 row-start-1", enAttente && "invisible")}
+          >
+            <strong className="font-semibold text-foreground">{total}</strong>{" "}
+            {total > 1 ? "biens trouvés" : "bien trouvé"}
+          </span>
         </p>
 
         {actifs ? (

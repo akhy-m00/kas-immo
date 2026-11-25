@@ -14,13 +14,29 @@ import {
   parseFiltres,
 } from "@/lib/properties-public";
 import { backgrounds, immobilierLogo } from "@/lib/site";
+import { metadataPage } from "@/lib/seo";
 
 const photo = backgrounds.immobilier;
 
-export const metadata: Metadata = {
-  title: "KAS Immobilier",
-  description: "Louer, vendre, acheter en toute confiance.",
-};
+export const metadata: Metadata = metadataPage({
+  titre: "Immobilier à Dakar : location, vente et achat",
+  description:
+    "Appartements, maisons, terrains et bureaux à louer ou à vendre à Dakar. KAS Immobilier vous accompagne pour louer, vendre, acheter et faire gérer votre bien.",
+  chemin: "/immobilier",
+  image: {
+    chemin: "/immobilier/opengraph-image",
+    alt: "KAS Immobilier — location, vente et achat de biens à Dakar",
+  },
+  motsCles: [
+    "immobilier Dakar",
+    "location appartement Dakar",
+    "maison à vendre Dakar",
+    "terrain à vendre Dakar",
+    "bureau à louer Dakar",
+    "agence immobilière Dakar",
+    "gestion locative Dakar",
+  ],
+});
 
 /**
  * Le catalogue est rendu sur le serveur puis mis en cache, avec revalidation

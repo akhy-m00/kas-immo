@@ -50,6 +50,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: bien.created_at,
       changeFrequency: "weekly",
       priority: 0.7,
+      // Les photos référencées ici peuvent apparaître dans Google Images.
+      images: bien.photos.map((photo) => photo.url),
     }));
   } catch {
     fiches = [];

@@ -113,3 +113,29 @@ Si ce réglage est réactivé par erreur, aucun e-mail ne part vers le domaine t
 La connexion **Google** a été retirée (fournisseur désactivé dans Supabase, bouton supprimé du site). Est conservé en parallèle un bloc de connexion **e-mail + mot de passe** pour les comptes créés avant le passage au numéro (ils ne sont ni convertis ni supprimés). La réinitialisation de mot de passe reste possible par e-mail pour ces comptes ; un compte créé avec un numéro seul doit passer par l'agence, et `requestPasswordReset()` refuse explicitement toute adresse technique.
 
 Base de données : aucune migration n'est nécessaire, et les politiques RLS ne sont pas modifiées. `public.profiles.phone` existe déjà et le déclencheur `handle_new_user` le remplit depuis `raw_user_meta_data` (voir `lib/supabase/auth-client.ts`, fonction `signUp`). L'identifiant de connexion change, mais pas l'UUID de `auth.users.id` : les demandes existantes restent rattachées à leur auteur.
+
+## Référencement (SEO) et partage sur les réseaux sociaux
+
+Toutes les URL absolues viennent de `NEXT_PUBLIC_SITE_URL` (voir `lib/site.ts`).
+
+| Élément | Fichier | URL |
+| --- | --- | --- |
+| Métadonnées par page (titre, description, canonique, Open Graph, X) | `lib/seo.ts` → `metadataPage()` | — |
+| Données structurées schema.org (entreprise, site, annonces, fil d'Ariane) | `lib/seo.ts`, `components/seo/json-ld.tsx` | — |
+| robots.txt | `app/robots.ts` | `/robots.txt` |
+| Sitemap (pages + fiches de biens disponibles, avec photos) | `app/sitemap.ts` | `/sitemap.xml` |
+| Manifeste web | `app/manifest.ts` | `/manifest.webmanifest` |
+| Images de partage 1200×630 | `app/**/opengraph-image.tsx` | `/opengraph-image`, `/immobilier/opengraph-image`, `/cleaning/opengraph-image`, `/immobilier/<id>/opengraph-image` |
+| Kit de marque (profils, bannière, publication) | `app/brand/[fichier]/route.tsx` | `/brand/profil-immobilier.png`, `/brand/profil-cleaning.png`, `/brand/banniere.png`, `/brand/publication.png`, `/brand/partage.png` |
+
+Les images sont dessinées par `lib/og/cartes.tsx` à partir des polices de `assets/fonts/` et des visuels de `assets/og/`. Après un changement de logo ou de photo de fond dans `public/images/`, régénérer ces visuels :
+
+```bash
+node scripts/generate-og-assets.mjs
+```
+
+Pour qu'une nouvelle page publique soit bien référencée : `export const metadata = metadataPage({ titre, description, chemin })`, et l'ajouter à `app/sitemap.ts`. Une page privée passe `indexable: false`.
+
+Après la mise en ligne :
+1. Google Search Console : ajouter le domaine, renseigner `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` (ou valider par DNS), puis soumettre `https://<domaine>/sitemap.xml`.
+2. Vérifier les aperçus : [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/), [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/), et le [test des résultats enrichis](https://search.google.com/test/rich-results) de Google.

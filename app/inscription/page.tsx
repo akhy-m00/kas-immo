@@ -4,11 +4,14 @@ import { SectionBadge } from "@/components/SectionBadge";
 import { cleaningLogo } from "@/lib/site";
 
 import { SignupForm } from "./signup-form";
+import { metadataPage } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Inscription",
+export const metadata: Metadata = metadataPage({
+  titre: "Inscription",
   description: "Créez votre compte client Keur Anta Services.",
-};
+  chemin: "/inscription",
+  indexable: false,
+});
 
 export default function InscriptionPage() {
   return (

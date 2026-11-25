@@ -51,9 +51,12 @@ export function AuthPlaceholder({
 export function AuthNavLink({
   className,
   width = "button",
+  onNavigate,
 }: {
   className?: string;
   width?: "button" | "block";
+  /** Appelé au clic sur un lien (Connexion, Mon compte, Admin, Déconnexion). */
+  onNavigate?: () => void;
 }) {
   const [session, setSession] = useState<{
     fullName: string;
@@ -91,7 +94,9 @@ export function AuthNavLink({
           size="lg"
           className={width === "block" ? "h-12 w-full text-base" : "h-11 px-5"}
         >
-          <Link href="/connexion">Connexion</Link>
+          <Link href="/connexion" onClick={onNavigate}>
+            Connexion
+          </Link>
         </Button>
       </div>
     );
@@ -99,7 +104,7 @@ export function AuthNavLink({
 
   return (
     <div className={className}>
-      <UserMenu width={width} />
+      <UserMenu width={width} onNavigate={onNavigate} />
     </div>
   );
 }

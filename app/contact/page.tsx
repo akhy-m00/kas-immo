@@ -14,11 +14,13 @@ import {
   siteConfig,
   socialLinks,
 } from "@/lib/site";
+import { metadataPage } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Contact",
-  description: "Contactez KAS Immobilier ou KAS Cleaning à Dakar.",
-};
+export const metadata: Metadata = metadataPage({
+  titre: "Contact",
+  description: `Contactez KAS Immobilier (${immobilierContact.fixedLine.display} · WhatsApp ${immobilierContact.mobile.display}) et KAS Cleaning (${cleaningContact.phones[0].display}) à Dakar.`,
+  chemin: "/contact",
+});
 
 export default function ContactPage() {
   return (
