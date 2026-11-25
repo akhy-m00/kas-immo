@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { motion } from "motion/react";
 
-import { FloatingField } from "@/components/motion/FloatingField";
+import { AuthField } from "@/components/auth/auth-field";
 import { Button } from "@/components/ui/button";
 import { DURATION, EASE_PRO } from "@/lib/animations";
 import {
@@ -111,24 +111,26 @@ export function SignupForm() {
   return (
     <div className="rounded-2xl border border-border bg-card p-6 text-card-foreground sm:p-8">
       <form onSubmit={handleSubmit} noValidate>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <FloatingField
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <AuthField
             id="prenom"
             name="firstName"
             type="text"
             autoComplete="given-name"
             label="Prénom"
+            placeholder="Ex : Awa"
             value={firstName}
             onValueChange={setFirstName}
             error={fieldErrors.prenom}
             required
           />
-          <FloatingField
+          <AuthField
             id="nom"
             name="lastName"
             type="text"
             autoComplete="family-name"
             label="Nom"
+            placeholder="Ex : Diop"
             value={lastName}
             onValueChange={setLastName}
             error={fieldErrors.nom}
@@ -137,37 +139,40 @@ export function SignupForm() {
         </div>
 
         <div className="mt-5 flex flex-col gap-5">
-          <FloatingField
+          <AuthField
             id="telephone"
             name="phone"
             type="tel"
             inputMode="tel"
             autoComplete="tel"
             label="Numéro de téléphone"
+            placeholder="Ex : 77 123 45 67"
             hint={INDICE_TELEPHONE}
             value={phone}
             onValueChange={setPhone}
             error={fieldErrors.telephone}
             required
           />
-          <FloatingField
+          <AuthField
             id="mot-de-passe"
             name="password"
             type="password"
             autoComplete="new-password"
             label="Mot de passe"
+            placeholder={`${LONGUEUR_MDP_MIN} caractères minimum`}
             value={password}
             onValueChange={setPassword}
             error={fieldErrors.motDePasse}
             minLength={LONGUEUR_MDP_MIN}
             required
           />
-          <FloatingField
+          <AuthField
             id="confirmation"
             name="confirmation"
             type="password"
             autoComplete="new-password"
             label="Confirmer le mot de passe"
+            placeholder="Saisissez-le à nouveau"
             value={confirmation}
             onValueChange={setConfirmation}
             error={fieldErrors.confirmation}

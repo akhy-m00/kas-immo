@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { motion } from "motion/react";
 
-import { FloatingField } from "@/components/motion/FloatingField";
+import { AuthField } from "@/components/auth/auth-field";
 import { Button } from "@/components/ui/button";
 import { DURATION, EASE_PRO } from "@/lib/animations";
 import {
@@ -224,25 +224,27 @@ export function LoginForm() {
     <div className="rounded-2xl border border-border bg-card p-6 text-card-foreground sm:p-8">
       <form onSubmit={handleSubmit} noValidate>
         <div className="flex flex-col gap-5">
-          <FloatingField
+          <AuthField
             id="telephone"
             name="phone"
             type="tel"
             inputMode="tel"
             autoComplete="tel"
             label="Numéro de téléphone"
+            placeholder="Ex : 77 123 45 67"
             hint={INDICE_TELEPHONE}
             value={phone}
             onValueChange={setPhone}
             error={fieldErrors.telephone}
             required
           />
-          <FloatingField
+          <AuthField
             id="mot-de-passe"
             name="password"
             type="password"
             autoComplete="current-password"
             label="Mot de passe"
+            placeholder="Votre mot de passe"
             value={password}
             onValueChange={setPassword}
             error={fieldErrors.motDePasse}
@@ -311,13 +313,14 @@ export function LoginForm() {
                   }
                 }}
               >
-                <FloatingField
+                <AuthField
                   id="email-recuperation"
                   name="recoveryEmail"
                   type="email"
                   inputMode="email"
                   autoComplete="email"
                   label="Adresse e-mail du compte"
+                  placeholder="Ex : nom@exemple.com"
                   value={recoveryEmail}
                   onValueChange={setRecoveryEmail}
                   error={fieldErrors.emailRecuperation}
@@ -387,24 +390,26 @@ export function LoginForm() {
             comptes s&apos-inscrivent avec un numéro.
           </p>
 
-          <FloatingField
+          <AuthField
             id="email-connexion"
             name="email"
             type="email"
             inputMode="email"
             autoComplete="email"
             label="Adresse e-mail du compte"
+            placeholder="Ex : nom@exemple.com"
             value={emailLoginEmail}
             onValueChange={setEmailLoginEmail}
             error={fieldErrors.emailConnexion}
             required
           />
-          <FloatingField
+          <AuthField
             id="mot-de-passe-email"
             name="emailPassword"
             type="password"
             autoComplete="current-password"
             label="Mot de passe"
+            placeholder="Votre mot de passe"
             value={emailLoginPassword}
             onValueChange={setEmailLoginPassword}
             error={fieldErrors.motDePasseEmailConnexion}
