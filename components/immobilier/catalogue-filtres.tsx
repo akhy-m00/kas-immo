@@ -6,7 +6,12 @@ import { Loader2, SlidersHorizontal, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { FloatingField } from "@/components/motion/FloatingField";
+import { Champ } from "@/components/forms/champ";
+import {
+  CLASSE_CHAMP,
+  CLASSE_GROUPE,
+  CLASSE_LIBELLE,
+} from "@/components/forms/styles";
 import { OPTIONS_TYPE, OPTIONS_TRANSACTION } from "@/lib/properties-public";
 import type { CatalogueFiltres } from "@/lib/properties-public";
 
@@ -128,11 +133,12 @@ export function CatalogueFiltres({
 
   return (
     <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
-      <form onSubmit={(event) => event.preventDefault()} className="grid gap-4">
-        <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-          <FloatingField
+      <form onSubmit={(event) => event.preventDefault()} className="grid min-w-0 gap-4">
+        <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+          <Champ
             id="recherche-bien"
             label="Rechercher un bien"
+            placeholder="Ex : Almadies, appartement…"
             type="search"
             value={recherche}
             onValueChange={(valeur) => {
@@ -144,7 +150,7 @@ export function CatalogueFiltres({
           <Button
             type="button"
             variant="outline"
-            className="h-11 gap-2 sm:w-auto"
+            className="h-12 gap-2 rounded-xl sm:w-auto"
             onClick={() => setOuvert((valeur) => !valeur)}
             aria-expanded={ouvert}
             aria-controls="filtres-advanced"
@@ -163,19 +169,17 @@ export function CatalogueFiltres({
         <div
           id="filtres-advanced"
           hidden={!ouvert}
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
         >
-          <label className="grid gap-1.5 text-sm">
-            <span className="font-medium text-foreground">
-              Type de transaction
-            </span>
+          <label className={CLASSE_GROUPE}>
+            <span className={CLASSE_LIBELLE}>Type de transaction</span>
             <select
               name="transaction"
               defaultValue={filtres.transaction ?? ""}
               onChange={(event) =>
                 appliquer({ transaction: event.target.value || null })
               }
-              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-base"
+              className={CLASSE_CHAMP}
             >
               <option value="">Toutes</option>
               {OPTIONS_TRANSACTION.map((option) => (
@@ -186,15 +190,15 @@ export function CatalogueFiltres({
             </select>
           </label>
 
-          <label className="grid gap-1.5 text-sm">
-            <span className="font-medium text-foreground">Type de bien</span>
+          <label className={CLASSE_GROUPE}>
+            <span className={CLASSE_LIBELLE}>Type de bien</span>
             <select
               name="type"
               defaultValue={filtres.type ?? ""}
               onChange={(event) =>
                 appliquer({ type: event.target.value || null })
               }
-              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-base"
+              className={CLASSE_CHAMP}
             >
               <option value="">Tous</option>
               {OPTIONS_TYPE.map((option) => (
@@ -205,10 +209,8 @@ export function CatalogueFiltres({
             </select>
           </label>
 
-          <label className="grid gap-1.5 text-sm">
-            <span className="font-medium text-foreground">
-              Prix minimum (FCFA)
-            </span>
+          <label className={CLASSE_GROUPE}>
+            <span className={CLASSE_LIBELLE}>Prix minimum (FCFA)</span>
             <input
               type="number"
               name="prixMin"
@@ -217,14 +219,12 @@ export function CatalogueFiltres({
               defaultValue={filtres.prixMin ?? ""}
               placeholder="0"
               onChange={(event) => changerTexte("prixMin", event.target.value)}
-              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-base"
+              className={CLASSE_CHAMP}
             />
           </label>
 
-          <label className="grid gap-1.5 text-sm">
-            <span className="font-medium text-foreground">
-              Prix maximum (FCFA)
-            </span>
+          <label className={CLASSE_GROUPE}>
+            <span className={CLASSE_LIBELLE}>Prix maximum (FCFA)</span>
             <input
               type="number"
               name="prixMax"
@@ -233,7 +233,7 @@ export function CatalogueFiltres({
               defaultValue={filtres.prixMax ?? ""}
               placeholder="—"
               onChange={(event) => changerTexte("prixMax", event.target.value)}
-              className="h-11 w-full rounded-lg border border-border bg-background px-3 text-base"
+              className={CLASSE_CHAMP}
             />
           </label>
 

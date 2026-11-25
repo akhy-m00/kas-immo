@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { motion } from "motion/react";
 
-import { AuthField } from "@/components/auth/auth-field";
+import { Champ } from "@/components/forms/champ";
 import { Button } from "@/components/ui/button";
 import { DURATION, EASE_PRO } from "@/lib/animations";
 import {
@@ -111,8 +111,8 @@ export function SignupForm() {
   return (
     <div className="rounded-2xl border border-border bg-card p-6 text-card-foreground sm:p-8">
       <form onSubmit={handleSubmit} noValidate>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <AuthField
+        <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2">
+          <Champ
             id="prenom"
             name="firstName"
             type="text"
@@ -124,7 +124,7 @@ export function SignupForm() {
             error={fieldErrors.prenom}
             required
           />
-          <AuthField
+          <Champ
             id="nom"
             name="lastName"
             type="text"
@@ -139,7 +139,7 @@ export function SignupForm() {
         </div>
 
         <div className="mt-5 flex flex-col gap-5">
-          <AuthField
+          <Champ
             id="telephone"
             name="phone"
             type="tel"
@@ -153,7 +153,7 @@ export function SignupForm() {
             error={fieldErrors.telephone}
             required
           />
-          <AuthField
+          <Champ
             id="mot-de-passe"
             name="password"
             type="password"
@@ -166,7 +166,7 @@ export function SignupForm() {
             minLength={LONGUEUR_MDP_MIN}
             required
           />
-          <AuthField
+          <Champ
             id="confirmation"
             name="confirmation"
             type="password"

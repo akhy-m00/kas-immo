@@ -8,7 +8,13 @@ import {
   type CleaningQuoteFormState,
 } from "@/app/cleaning/actions";
 import { CleaningTypeField } from "@/components/cleaning/cleaning-type-field";
-import { FloatingField } from "@/components/motion/FloatingField";
+import { Champ } from "@/components/forms/champ";
+import {
+  CLASSE_ERREUR,
+  CLASSE_GRILLE_2,
+  CLASSE_GROUPE,
+  CLASSE_ZONE_TEXTE,
+} from "@/components/forms/styles";
 import { ChampDateHeure, limiteDeSelection } from "@/components/requests/champ-date-heure";
 import { Button } from "@/components/ui/button";
 import {
@@ -88,7 +94,7 @@ export function CleaningRequestForm() {
   const erreurs = etat?.fieldErrors ?? {};
 
   return (
-    <form action={action} className="flex flex-col gap-6" noValidate>
+    <form action={action} className="flex min-w-0 flex-col gap-5" noValidate>
       <CleaningTypeField
         name="cleaningType"
         value={cleaningType}
@@ -96,7 +102,7 @@ export function CleaningRequestForm() {
         error={erreurs.cleaningType}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={CLASSE_GRILLE_2}>
         <ChampDateHeure
           id="rendez-vous-date"
           name="desiredDate"
@@ -139,11 +145,12 @@ export function CleaningRequestForm() {
         </p>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <FloatingField
+      <div className={CLASSE_GRILLE_2}>
+        <Champ
           id="rendez-vous-nom"
           name="fullName"
           label="Nom complet"
+          placeholder="Ex : Awa Diop"
           autoComplete="name"
           value={fullName}
           onValueChange={setFullName}
@@ -152,10 +159,11 @@ export function CleaningRequestForm() {
           error={erreurs.fullName}
         />
 
-        <FloatingField
+        <Champ
           id="rendez-vous-telephone"
           name="phone"
           label="Téléphone"
+          placeholder="Ex : 77 123 45 67"
           type="tel"
           inputMode="tel"
           autoComplete="tel"
@@ -167,8 +175,8 @@ export function CleaningRequestForm() {
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <div className="flex items-baseline justify-between gap-3">
+      <div className={CLASSE_GROUPE}>
+        <div className="mb-2 flex items-baseline justify-between gap-3">
           <label
             htmlFor="rendez-vous-message"
             className="text-sm font-medium text-foreground"
@@ -193,14 +201,14 @@ export function CleaningRequestForm() {
           placeholder="Type de bien, surface, étage, accessibilité, préférences…"
           aria-invalid={erreurs.message ? true : undefined}
           aria-describedby={erreurs.message ? "rendez-vous-message-erreur" : undefined}
-          className="w-full resize-y rounded-lg border border-input bg-background px-4 py-3 text-base outline-none placeholder:text-muted-foreground focus-visible:border-brand-text focus-visible:ring-3 focus-visible:ring-brand-text/20"
+          className={CLASSE_ZONE_TEXTE}
         />
 
         {erreurs.message ? (
           <p
             id="rendez-vous-message-erreur"
             role="alert"
-            className="px-1 text-sm font-medium text-destructive"
+            className={CLASSE_ERREUR}
           >
             {erreurs.message}
           </p>

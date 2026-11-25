@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { motion } from "motion/react";
 
-import { FloatingField } from "@/components/motion/FloatingField";
+import { Champ } from "@/components/forms/champ";
 import { Button } from "@/components/ui/button";
 import { DURATION, EASE_PRO } from "@/lib/animations";
 import { getOwnRole, updatePassword } from "@/lib/supabase/auth-client";
@@ -78,24 +78,26 @@ export function ResetPasswordForm() {
     <div className="rounded-2xl border border-border bg-card p-6 text-card-foreground sm:p-8">
       <form onSubmit={handleSubmit} noValidate>
         <div className="flex flex-col gap-5">
-          <FloatingField
+          <Champ
             id="nouveau-mot-de-passe"
             name="password"
             type="password"
             autoComplete="new-password"
             label="Nouveau mot de passe"
+            placeholder={`${LONGUEUR_MDP_MIN} caractères minimum`}
             value={password}
             onValueChange={setPassword}
             error={fieldErrors.motDePasse}
             minLength={LONGUEUR_MDP_MIN}
             required
           />
-          <FloatingField
+          <Champ
             id="confirmation-mot-de-passe"
             name="confirmation"
             type="password"
             autoComplete="new-password"
             label="Confirmer le mot de passe"
+            placeholder="Saisissez-le à nouveau"
             value={confirmation}
             onValueChange={setConfirmation}
             error={fieldErrors.confirmation}

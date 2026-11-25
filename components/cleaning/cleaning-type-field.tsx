@@ -12,6 +12,7 @@ import {
   CLEANING_TYPE_DESCRIPTIONS,
 } from "@/lib/requests";
 import type { CleaningType } from "@/lib/supabase/database.types";
+import { CLASSE_ERREUR } from "@/components/forms/styles";
 import { cn } from "@/lib/utils";
 
 /**
@@ -55,15 +56,21 @@ export function CleaningTypeField({
   error,
 }: CleaningTypeFieldProps) {
   return (
-    <fieldset className="flex flex-col gap-2">
-      <legend className="text-sm font-medium text-foreground">
+    // `min-w-0` : un `<fieldset>` a par défaut une largeur minimale égale à
+    // son contenu (`min-inline-size: min-content`) et pouvait déborder de la
+    // carte sur mobile.
+    <fieldset className="flex min-w-0 flex-col">
+      {/* `mb-3` sur la légende elle-même : une `<legend>` est placée hors du
+          flux flex du fieldset, le `gap` du conteneur ne l'espaçait donc pas
+          de la première carte. */}
+      <legend className="mb-3 block text-sm font-medium text-foreground">
         Type de nettoyage
       </legend>
 
       <div
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${name}-erreur` : undefined}
-        className="grid gap-3 sm:grid-cols-2"
+        className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2"
       >
         {CLEANING_TYPES.map((option) => {
           const Icone = ICONES[option.value];
@@ -125,11 +132,7 @@ export function CleaningTypeField({
       </div>
 
       {error ? (
-        <p
-          id={`${name}-erreur`}
-          role="alert"
-          className="px-1 text-sm font-medium text-destructive"
-        >
+        <p id={`${name}-erreur`} role="alert" className={CLASSE_ERREUR}>
           {error}
         </p>
       ) : null}

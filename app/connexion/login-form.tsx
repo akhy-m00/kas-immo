@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { motion } from "motion/react";
 
-import { AuthField } from "@/components/auth/auth-field";
+import { Champ } from "@/components/forms/champ";
 import { Button } from "@/components/ui/button";
 import { DURATION, EASE_PRO } from "@/lib/animations";
 import {
@@ -224,7 +224,7 @@ export function LoginForm() {
     <div className="rounded-2xl border border-border bg-card p-6 text-card-foreground sm:p-8">
       <form onSubmit={handleSubmit} noValidate>
         <div className="flex flex-col gap-5">
-          <AuthField
+          <Champ
             id="telephone"
             name="phone"
             type="tel"
@@ -238,7 +238,7 @@ export function LoginForm() {
             error={fieldErrors.telephone}
             required
           />
-          <AuthField
+          <Champ
             id="mot-de-passe"
             name="password"
             type="password"
@@ -313,7 +313,7 @@ export function LoginForm() {
                   }
                 }}
               >
-                <AuthField
+                <Champ
                   id="email-recuperation"
                   name="recoveryEmail"
                   type="email"
@@ -384,13 +384,13 @@ export function LoginForm() {
           Mon compte utilise une adresse e-mail
         </summary>
 
-        <form onSubmit={handleEmailSubmit} noValidate className="mt-4 flex flex-col gap-4">
+        <form onSubmit={handleEmailSubmit} noValidate className="mt-4 flex min-w-0 flex-col gap-5">
           <p className="text-xs text-muted-foreground">
             Réservé aux comptes créés avant le numéro de téléphone. Les nouveaux
             comptes s&apos-inscrivent avec un numéro.
           </p>
 
-          <AuthField
+          <Champ
             id="email-connexion"
             name="email"
             type="email"
@@ -403,7 +403,7 @@ export function LoginForm() {
             error={fieldErrors.emailConnexion}
             required
           />
-          <AuthField
+          <Champ
             id="mot-de-passe-email"
             name="emailPassword"
             type="password"

@@ -1,22 +1,23 @@
+import {
+  CLASSE_CHAMP_DATE_HEURE,
+  CLASSE_ERREUR,
+  CLASSE_GROUPE,
+  CLASSE_LIBELLE,
+} from "@/components/forms/styles";
 import { aujourdhuiAuSite } from "@/lib/requests";
 
 /**
  * Champ natif `date` ou `time`, avec un libellé fixe au-dessus.
  *
- * Extrait de `components/immobilier/request-visit-dialog.tsx`, qui le déclarait
- * en privé. Les deux formulaires du site — demande de visite d'un bien et demande
- * de rendez-vous Cleaning — demandent exactement le même couple de champs, avec
- * les mêmes bornes. Le dupliquer aurait créé deux champs date/heure qui
- * divergeraient : une correction de style ou d'accessibilité dans l'un laisserait
- * l'autre derrière.
+ * Partagé par les deux formulaires de demande — visite d'un bien et
+ * rendez-vous Cleaning — pour qu'une correction profite aux deux.
  *
- * `FloatingField` n'est pas réutilisé ici, volontairement : les sélecteurs
- * natifs affichent déjà leur propre format de date (« 05/10/2026 »), et un
- * libellé flottant qui viendrait se superposer dessus rendrait la saisie
- * ambiguë. Un libellé fixe laisse le champ lisible.
- *
- * `[color-scheme:dark]` suit le thème : sans cela, le calendrier natif reste
- * blanc sur fond sombre, et le texte y devient quasi illisible.
+ * ⚠️ Débordement sur Safari iOS : un `<input type="date">` y a une largeur
+ * native incompressible, qui faisait sortir la case du formulaire à droite.
+ * `CLASSE_CHAMP_DATE_HEURE` retire l'apparence native (`appearance: none`),
+ * force `min-width: 0` et la pleine largeur ; `app/globals.css` aligne en plus
+ * la valeur à gauche (`::-webkit-date-and-time-value`). Le conteneur porte
+ * `min-w-0` pour qu'une grille ne puisse pas s'élargir à cause de lui.
  */
 export function ChampDateHeure({
   id,
@@ -40,8 +41,8 @@ export function ChampDateHeure({
   error?: string;
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-sm font-medium text-foreground">
+    <div className={CLASSE_GROUPE}>
+      <label htmlFor={id} className={CLASSE_LIBELLE}>
         {label}
       </label>
 
@@ -56,15 +57,11 @@ export function ChampDateHeure({
         max={max}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${id}-erreur` : undefined}
-        className="h-12 w-full rounded-lg border border-input bg-background px-3 text-base text-foreground outline-none [color-scheme:light] focus-visible:border-brand-text focus-visible:ring-3 focus-visible:ring-brand-text/20 dark:[color-scheme:dark] aria-invalid:border-destructive"
+        className={CLASSE_CHAMP_DATE_HEURE}
       />
 
       {error ? (
-        <p
-          id={`${id}-erreur`}
-          role="alert"
-          className="px-1 text-sm font-medium text-destructive"
-        >
+        <p id={`${id}-erreur`} role="alert" className={CLASSE_ERREUR}>
           {error}
         </p>
       ) : null}

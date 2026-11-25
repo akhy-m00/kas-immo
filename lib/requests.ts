@@ -78,7 +78,7 @@ export const CLEANING_TYPE_VALUES = CLEANING_TYPES.map((item) => item.value);
 /** Description d'une option de nettoyage, pour les cartes radio du formulaire. */
 export const CLEANING_TYPE_DESCRIPTIONS: Record<CleaningType, string> = {
   appartement: "Logement en appartement, avant ou après une location.",
-  immeuble: "Parties communes et apartments d'un immeuble.",
+  immeuble: "Parties communes et appartements d'un immeuble.",
   bureau: "Espaces de travail d'un local professionnel.",
   apres_demenagement: "Avant un état des lieux ou après un déménagement.",
 };

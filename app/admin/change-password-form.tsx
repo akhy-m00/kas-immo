@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { motion } from "motion/react";
 
 import { Button } from "@/components/ui/button";
-import { FloatingField } from "@/components/motion/FloatingField";
+import { Champ } from "@/components/forms/champ";
 import { DURATION, EASE_PRO } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 
@@ -23,9 +23,9 @@ const STATE_INITIAL: ChangePasswordState = {
  *
  * L'état est piloté par `useActionState` : aucune requête HTTP naïve, le
  * formulaire fonctionne même si le JavaScript du navigateur échoue, et
- * `pending` évite les doubles soumissions. Les champs redeviennent « flottants »
- * dès qu'une valeur est saisie (même comportement que les formulaires publics
- * via `FloatingField`), et le mot de passe est vidé du DOM une fois modifié.
+ * `pending` évite les doubles soumissions. Les champs sont ceux de tout le site
+ * (`components/forms/champ.tsx`), et le mot de passe est vidé du DOM une fois
+ * modifié.
  */
 export function ChangePasswordForm() {
   const [motDePasse, setMotDePasse] = useState("");
@@ -51,12 +51,13 @@ export function ChangePasswordForm() {
 
   return (
     <form action={formAction} noValidate className="flex flex-col gap-5">
-      <FloatingField
+      <Champ
         id="nouveau-mot-de-passe"
         name="motDePasse"
         type="password"
         autoComplete="new-password"
         label="Nouveau mot de passe"
+        placeholder={`${LONGUEUR_MDP_MIN} caractères minimum`}
         value={motDePasse}
         onValueChange={setMotDePasse}
         error={state?.fieldErrors.motDePasse}
@@ -64,12 +65,13 @@ export function ChangePasswordForm() {
         required
       />
 
-      <FloatingField
+      <Champ
         id="confirmation-mot-de-passe"
         name="confirmation"
         type="password"
         autoComplete="new-password"
         label="Confirmer le mot de passe"
+        placeholder="Saisissez-le à nouveau"
         value={confirmation}
         onValueChange={setConfirmation}
         error={state?.fieldErrors.confirmation}

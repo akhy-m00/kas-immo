@@ -7,7 +7,13 @@ import {
   submitCleaningQuoteRequest,
   type CleaningQuoteFormState,
 } from "@/app/cleaning/actions";
-import { FloatingField } from "@/components/motion/FloatingField";
+import { Champ } from "@/components/forms/champ";
+import {
+  CLASSE_ERREUR,
+  CLASSE_GRILLE_2,
+  CLASSE_GROUPE,
+  CLASSE_ZONE_TEXTE,
+} from "@/components/forms/styles";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -144,7 +150,7 @@ function QuoteForm({
   const erreurs = etat?.fieldErrors ?? {};
 
   return (
-    <form action={action} className="flex flex-col gap-5" noValidate>
+    <form action={action} className="flex min-w-0 flex-col gap-5" noValidate>
       <input type="hidden" name="cleaningServiceId" value={cleaningServiceId} />
 
       <DialogHeader>
@@ -174,11 +180,12 @@ function QuoteForm({
         </p>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <FloatingField
+      <div className={CLASSE_GRILLE_2}>
+        <Champ
           id="devis-nom"
           name="fullName"
           label="Nom complet"
+          placeholder="Ex : Awa Diop"
           autoComplete="name"
           value={fullName}
           onValueChange={setFullName}
@@ -187,10 +194,11 @@ function QuoteForm({
           error={erreurs.fullName}
         />
 
-        <FloatingField
+        <Champ
           id="devis-telephone"
           name="phone"
           label="Téléphone"
+          placeholder="Ex : 77 123 45 67"
           type="tel"
           inputMode="tel"
           autoComplete="tel"
@@ -202,8 +210,8 @@ function QuoteForm({
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <div className="flex items-baseline justify-between gap-3">
+      <div className={CLASSE_GROUPE}>
+        <div className="mb-2 flex items-baseline justify-between gap-3">
           <label
             htmlFor="devis-message"
             className="text-sm font-medium text-foreground"
@@ -225,14 +233,14 @@ function QuoteForm({
           placeholder="Type de bien, surface, fréquence souhaitée, disponibilités…"
           aria-invalid={erreurs.message ? true : undefined}
           aria-describedby={erreurs.message ? "devis-message-erreur" : undefined}
-          className="w-full resize-y rounded-lg border border-input bg-background px-4 py-3 text-base outline-none placeholder:text-muted-foreground focus-visible:border-brand-text focus-visible:ring-3 focus-visible:ring-brand-text/20"
+          className={CLASSE_ZONE_TEXTE}
         />
 
         {erreurs.message ? (
           <p
             id="devis-message-erreur"
             role="alert"
-            className="px-1 text-sm font-medium text-destructive"
+            className={CLASSE_ERREUR}
           >
             {erreurs.message}
           </p>

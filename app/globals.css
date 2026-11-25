@@ -213,6 +213,49 @@
     overflow: hidden;
   }
 
+  /* ----------------------------------------------------------------------
+     Formulaires : filet de sécurité contre les débordements (Safari iOS).
+     Le style visible des champs vit dans `components/forms/styles.ts` ; ces
+     règles garantissent seulement qu'aucun champ, même oublié, ne sorte de
+     son conteneur. Couche `base` : une classe utilitaire les surcharge.
+     ---------------------------------------------------------------------- */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="range"]),
+  select,
+  textarea {
+    box-sizing: border-box;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  /* Un fieldset prend par défaut la largeur minimale de son contenu
+     (`min-inline-size: min-content`) et peut alors élargir la carte. */
+  fieldset {
+    min-width: 0;
+  }
+
+  /* Date et heure : Safari iOS leur impose une largeur native qui dépasse à
+     droite du formulaire. Sans apparence native, la case suit la largeur de
+     son conteneur ; le sélecteur natif s'ouvre toujours au toucher. */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    text-align: left;
+  }
+
+  /* Valeur affichée par WebKit : alignée à gauche (centrée par défaut sur
+     iOS), et une hauteur de ligne conservée quand le champ est vide. */
+  input[type="date"]::-webkit-date-and-time-value,
+  input[type="time"]::-webkit-date-and-time-value,
+  input[type="datetime-local"]::-webkit-date-and-time-value {
+    min-height: 1.5em;
+    text-align: left;
+  }
+
   body {
     @apply bg-background text-foreground;
     text-rendering: optimizeLegibility;

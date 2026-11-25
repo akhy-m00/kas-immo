@@ -7,7 +7,13 @@ import {
   submitVisitRequest,
   type VisitRequestFormState,
 } from "@/app/immobilier/[id]/actions";
-import { FloatingField } from "@/components/motion/FloatingField";
+import { Champ } from "@/components/forms/champ";
+import {
+  CLASSE_ERREUR,
+  CLASSE_GRILLE_2,
+  CLASSE_GROUPE,
+  CLASSE_ZONE_TEXTE,
+} from "@/components/forms/styles";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -174,7 +180,7 @@ function VisitRequestForm({
   const erreurs = etat?.fieldErrors ?? {};
 
   return (
-    <form action={action} className="flex flex-col gap-5" noValidate>
+    <form action={action} className="flex min-w-0 flex-col gap-5" noValidate>
       <input type="hidden" name="propertyId" value={propertyId} />
 
       <DialogHeader>
@@ -201,11 +207,12 @@ function VisitRequestForm({
         </p>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <FloatingField
+      <div className={CLASSE_GRILLE_2}>
+        <Champ
           id="visite-nom"
           name="fullName"
           label="Nom complet"
+          placeholder="Ex : Awa Diop"
           autoComplete="name"
           value={fullName}
           onValueChange={setFullName}
@@ -214,10 +221,11 @@ function VisitRequestForm({
           error={erreurs.fullName}
         />
 
-        <FloatingField
+        <Champ
           id="visite-telephone"
           name="phone"
           label="Téléphone"
+          placeholder="Ex : 77 123 45 67"
           type="tel"
           inputMode="tel"
           autoComplete="tel"
@@ -229,7 +237,7 @@ function VisitRequestForm({
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={CLASSE_GRILLE_2}>
         <ChampDateHeure
           id="visite-date"
           name="desiredDate"
@@ -255,8 +263,8 @@ function VisitRequestForm({
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <div className="flex items-baseline justify-between gap-3">
+      <div className={CLASSE_GROUPE}>
+        <div className="mb-2 flex items-baseline justify-between gap-3">
           <label
             htmlFor="visite-message"
             className="text-sm font-medium text-foreground"
@@ -278,14 +286,14 @@ function VisitRequestForm({
           placeholder="Précisions sur le bien, vos disponibilités, questions…"
           aria-invalid={erreurs.message ? true : undefined}
           aria-describedby={erreurs.message ? "visite-message-erreur" : undefined}
-          className="w-full resize-y rounded-lg border border-input bg-background px-4 py-3 text-base outline-none placeholder:text-muted-foreground focus-visible:border-brand-text focus-visible:ring-3 focus-visible:ring-brand-text/20"
+          className={CLASSE_ZONE_TEXTE}
         />
 
         {erreurs.message ? (
           <p
             id="visite-message-erreur"
             role="alert"
-            className="px-1 text-sm font-medium text-destructive"
+            className={CLASSE_ERREUR}
           >
             {erreurs.message}
           </p>
